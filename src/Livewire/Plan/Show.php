@@ -143,7 +143,7 @@ class Show extends Component
         $this->stepDetails = $step->details ?? '';
         $this->stepLead = $step->lead ?? '';
         $this->stepKennzahl = $step->kennzahl ?? '';
-        $this->stepDeadline = $step->deadline ?? '';
+        $this->stepDeadline = $step->deadline?->format('Y-m-d') ?? '';
         $this->stepStatus = $step->status;
         $this->showStepModal = true;
     }

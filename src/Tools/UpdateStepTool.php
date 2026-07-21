@@ -42,7 +42,7 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                 'details' => ['type' => 'string', 'description' => 'Optional: Details.'],
                 'lead' => ['type' => 'string', 'description' => 'Optional: Lead.'],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
-                'deadline' => ['type' => 'string', 'description' => 'Optional: Deadline.'],
+                'deadline' => ['type' => ['string', 'null'], 'description' => 'Optional: Deadline als Datum YYYY-MM-DD. Leerstring/null entfernt die Deadline.'],
                 'status' => [
                     'type' => 'string',
                     'enum' => ['open', 'in_progress', 'done'],
@@ -73,10 +73,13 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
             }
 
             $data = [];
-            foreach (['title', 'details', 'lead', 'kennzahl', 'deadline'] as $field) {
+            foreach (['title', 'details', 'lead', 'kennzahl'] as $field) {
                 if (array_key_exists($field, $arguments)) {
                     $data[$field] = $arguments[$field];
                 }
+            }
+            if (array_key_exists('deadline', $arguments)) {
+                $data['deadline'] = !empty($arguments['deadline']) ? $arguments['deadline'] : null;
             }
             if (array_key_exists('status', $arguments)) {
                 if (!array_key_exists($arguments['status'], FokusplanStep::STATUSES)) {

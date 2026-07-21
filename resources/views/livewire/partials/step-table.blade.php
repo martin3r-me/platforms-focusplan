@@ -26,7 +26,7 @@
                     </x-ui-table-cell>
                     <x-ui-table-cell compact="true"><span class="text-sm">{{ $step->lead ?: '–' }}</span></x-ui-table-cell>
                     <x-ui-table-cell compact="true"><span class="text-sm">{{ $step->kennzahl ?: '–' }}</span></x-ui-table-cell>
-                    <x-ui-table-cell compact="true"><span class="text-sm">{{ $step->deadline ?: '–' }}</span></x-ui-table-cell>
+                    <x-ui-table-cell compact="true"><span class="text-sm tabular-nums">{{ $step->deadline?->format('d.m.Y') ?? '–' }}</span></x-ui-table-cell>
                     <x-ui-table-cell compact="true">
                         @include('fokusplan::livewire.partials.step-status-select', ['step' => $step, 'statuses' => $statuses])
                     </x-ui-table-cell>

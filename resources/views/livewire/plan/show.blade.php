@@ -232,7 +232,7 @@
                     />
                     <x-ui-input-text wire:model="stepLead" label="Lead" placeholder="z.B. BHG.DIGITAL" />
                     <x-ui-input-text wire:model="stepKennzahl" label="Kennzahl" />
-                    <x-ui-input-text wire:model="stepDeadline" label="Deadline" placeholder="z.B. Ende Q1" />
+                    <x-ui-input-text wire:model="stepDeadline" type="date" label="Deadline" />
                 </div>
             </div>
             <x-slot name="footer">

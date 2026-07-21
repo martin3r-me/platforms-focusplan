@@ -39,6 +39,7 @@ class FokusplanStep extends Model
 
     protected $casts = [
         'position' => 'integer',
+        'deadline' => 'date',
     ];
 
     protected static function booted(): void

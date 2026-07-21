@@ -46,7 +46,7 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 'details' => ['type' => 'string', 'description' => 'Optional: Details (Freitext).'],
                 'lead' => ['type' => 'string', 'description' => 'Optional: Lead, z.B. "BHG.DIGITAL".'],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
-                'deadline' => ['type' => 'string', 'description' => 'Optional: Deadline, z.B. "Ende Q1".'],
+                'deadline' => ['type' => 'string', 'description' => 'Optional: Deadline als Datum im Format YYYY-MM-DD (z.B. "2026-03-31").'],
                 'status' => [
                     'type' => 'string',
                     'enum' => ['open', 'in_progress', 'done'],
@@ -101,7 +101,7 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 'details' => $arguments['details'] ?? null,
                 'lead' => $arguments['lead'] ?? null,
                 'kennzahl' => $arguments['kennzahl'] ?? null,
-                'deadline' => $arguments['deadline'] ?? null,
+                'deadline' => !empty($arguments['deadline']) ? $arguments['deadline'] : null,
                 'status' => $status,
                 'created_by_user_id' => $context->user->id,
             ]);

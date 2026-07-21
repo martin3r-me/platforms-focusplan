@@ -24,9 +24,9 @@
 
     <div class="mt-3 flex items-center justify-between gap-2 flex-wrap">
         @if($step->deadline)
-            <span class="inline-flex items-center gap-1 text-xs text-[var(--ui-muted)]">
+            <span class="inline-flex items-center gap-1 text-xs text-[var(--ui-muted)] tabular-nums">
                 @svg('heroicon-o-calendar', 'w-3.5 h-3.5')
-                {{ $step->deadline }}
+                {{ $step->deadline->format('d.m.Y') }}
             </span>
         @else
             <span></span>

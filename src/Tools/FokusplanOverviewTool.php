@@ -52,7 +52,7 @@ class FokusplanOverviewTool implements ToolContract, ToolMetadataContract
                     'details' => 'Details (Freitext, ein Punkt pro Zeile)',
                     'lead' => 'Lead / Verantwortlicher des Steps',
                     'kennzahl' => 'Kennzahl',
-                    'deadline' => 'Deadline (Freitext, z.B. "Ende Q1")',
+                    'deadline' => 'Deadline als Datum (YYYY-MM-DD, nullable)',
                     'status' => 'open | in_progress | done',
                     'position' => 'Sortierreihenfolge',
                 ],
