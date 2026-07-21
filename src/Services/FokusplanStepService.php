@@ -10,8 +10,14 @@ class FokusplanStepService
     public function createStep(FokusplanPlan $plan, array $data): FokusplanStep
     {
         if (!isset($data['position'])) {
-            $maxPosition = FokusplanStep::where('fokusplan_plan_id', $plan->id)->max('position');
-            $data['position'] = ((int) $maxPosition) + 1;
+            $query = FokusplanStep::where('fokusplan_plan_id', $plan->id);
+            // Position innerhalb der Phase (bzw. der phasenlosen Steps) hochzählen.
+            if (array_key_exists('fokusplan_phase_id', $data) && $data['fokusplan_phase_id']) {
+                $query->where('fokusplan_phase_id', $data['fokusplan_phase_id']);
+            } else {
+                $query->whereNull('fokusplan_phase_id');
+            }
+            $data['position'] = ((int) $query->max('position')) + 1;
         }
 
         $data['fokusplan_plan_id'] = $plan->id;

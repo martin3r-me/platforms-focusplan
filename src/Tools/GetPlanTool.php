@@ -52,10 +52,25 @@ class GetPlanTool implements ToolContract, ToolMetadataContract
                 return ToolResult::error('VALIDATION_ERROR', 'plan_id ist erforderlich.');
             }
 
-            $plan = FokusplanPlan::where('team_id', $teamId)->with('steps')->find($planId);
+            $plan = FokusplanPlan::where('team_id', $teamId)
+                ->with(['phases.steps', 'steps'])
+                ->find($planId);
             if (!$plan) {
                 return ToolResult::error('NOT_FOUND', 'Fokusplan nicht gefunden. Nutze "fokusplan.plans.GET".');
             }
+
+            $mapStep = fn (FokusplanStep $step) => [
+                'id' => $step->id,
+                'uuid' => $step->uuid,
+                'phase_id' => $step->fokusplan_phase_id,
+                'title' => $step->title,
+                'details' => $step->details,
+                'lead' => $step->lead,
+                'kennzahl' => $step->kennzahl,
+                'deadline' => $step->deadline,
+                'status' => $step->status,
+                'position' => $step->position,
+            ];
 
             return ToolResult::success([
                 'id' => $plan->id,
@@ -65,17 +80,15 @@ class GetPlanTool implements ToolContract, ToolMetadataContract
                 'responsible' => $plan->responsible,
                 'year' => $plan->year,
                 'description' => $plan->description,
-                'steps' => $plan->steps->map(fn (FokusplanStep $step) => [
-                    'id' => $step->id,
-                    'uuid' => $step->uuid,
-                    'title' => $step->title,
-                    'details' => $step->details,
-                    'lead' => $step->lead,
-                    'kennzahl' => $step->kennzahl,
-                    'deadline' => $step->deadline,
-                    'status' => $step->status,
-                    'position' => $step->position,
+                'phases' => $plan->phases->map(fn ($phase) => [
+                    'id' => $phase->id,
+                    'uuid' => $phase->uuid,
+                    'title' => $phase->title,
+                    'description' => $phase->description,
+                    'position' => $phase->position,
+                    'steps' => $phase->steps->map($mapStep)->all(),
                 ])->all(),
+                'steps_without_phase' => $plan->steps->whereNull('fokusplan_phase_id')->map($mapStep)->values()->all(),
             ]);
         } catch (\Throwable $e) {
             return ToolResult::error('EXECUTION_ERROR', 'Fehler beim Laden des Fokusplans: ' . $e->getMessage());

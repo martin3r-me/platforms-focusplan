@@ -35,13 +35,19 @@ class FokusplanOverviewTool implements ToolContract, ToolMetadataContract
             'description' => 'Fokuspläne (Aktionspläne) anlegen und ausfüllen. Ein Plan hat einen Kopf (Titel, Fachbereich, Verantwortlich, Jahr) und eine Liste von Steps.',
             'data_model' => [
                 'FokusplanPlan' => [
-                    'title' => 'Titel des Plans (z.B. "Fokusplan 2026")',
-                    'fachbereich' => 'Fachbereich (z.B. "BANKETTPROFI PHASE 1")',
+                    'title' => 'Titel des Plans (z.B. "Fokusplan 2026 – Bankettprofi")',
+                    'fachbereich' => 'Fachbereich (z.B. "Bankettprofi")',
                     'responsible' => 'Verantwortlicher',
                     'year' => 'Jahr (integer)',
+                    'phases' => 'hasMany FokusplanPhase (Abschnitte)',
+                ],
+                'FokusplanPhase' => [
+                    'title' => 'Titel der Phase (z.B. "Phase 1")',
+                    'description' => 'Optionale Beschreibung',
                     'steps' => 'hasMany FokusplanStep',
                 ],
                 'FokusplanStep' => [
+                    'phase_id' => 'Optionale Zuordnung zu einer Phase (sonst phasenlos am Plan)',
                     'title' => 'Steps / Titel des Arbeitsschritts',
                     'details' => 'Details (Freitext, ein Punkt pro Zeile)',
                     'lead' => 'Lead / Verantwortlicher des Steps',
@@ -62,7 +68,10 @@ class FokusplanOverviewTool implements ToolContract, ToolMetadataContract
                 'fokusplan.plans.POST' => 'Plan erstellen',
                 'fokusplan.plans.PATCH' => 'Plan aktualisieren',
                 'fokusplan.plans.DELETE' => 'Plan löschen',
-                'fokusplan.steps.POST' => 'Step erstellen',
+                'fokusplan.phases.POST' => 'Phase erstellen',
+                'fokusplan.phases.PATCH' => 'Phase aktualisieren',
+                'fokusplan.phases.DELETE' => 'Phase löschen',
+                'fokusplan.steps.POST' => 'Step erstellen (optional phase_id)',
                 'fokusplan.steps.PATCH' => 'Step aktualisieren',
                 'fokusplan.steps.DELETE' => 'Step löschen',
                 'fokusplan.steps.reorder.POST' => 'Steps neu sortieren',

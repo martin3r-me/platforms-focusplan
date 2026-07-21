@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use Platform\Fokusplan\Models\FokusplanPlan;
 use Platform\Fokusplan\Models\FokusplanStep;
+use Platform\Fokusplan\Services\FokusplanPhaseService;
 use Platform\Fokusplan\Services\FokusplanStepService;
 
 class Show extends Component
@@ -19,9 +20,16 @@ class Show extends Component
     public string $planResponsible = '';
     public ?int $planYear = null;
 
-    // Step bearbeiten / anlegen
+    // Phase anlegen / bearbeiten
+    public bool $showPhaseModal = false;
+    public ?int $editingPhaseId = null;
+    public string $phaseTitle = '';
+    public string $phaseDescription = '';
+
+    // Step anlegen / bearbeiten
     public bool $showStepModal = false;
     public ?int $editingStepId = null;
+    public ?int $stepPhaseId = null;
     public string $stepTitle = '';
     public string $stepDetails = '';
     public string $stepLead = '';
@@ -70,12 +78,58 @@ class Show extends Component
         $this->dispatch('updateSidebar');
     }
 
+    // ---- Phasen ----
+
+    public function addPhase()
+    {
+        $this->editingPhaseId = null;
+        $this->phaseTitle = '';
+        $this->phaseDescription = '';
+        $this->showPhaseModal = true;
+    }
+
+    public function editPhase(int $phaseId)
+    {
+        $phase = $this->plan->phases()->findOrFail($phaseId);
+        $this->editingPhaseId = $phase->id;
+        $this->phaseTitle = $phase->title;
+        $this->phaseDescription = $phase->description ?? '';
+        $this->showPhaseModal = true;
+    }
+
+    public function savePhase()
+    {
+        $title = trim($this->phaseTitle);
+        if ($title === '') {
+            return;
+        }
+
+        $service = new FokusplanPhaseService();
+        $data = ['title' => $title, 'description' => trim($this->phaseDescription) ?: null];
+
+        if ($this->editingPhaseId) {
+            $phase = $this->plan->phases()->findOrFail($this->editingPhaseId);
+            $service->updatePhase($phase, $data);
+        } else {
+            $data['created_by_user_id'] = Auth::id();
+            $service->createPhase($this->plan, $data);
+        }
+
+        $this->showPhaseModal = false;
+    }
+
+    public function deletePhase(int $phaseId)
+    {
+        $phase = $this->plan->phases()->findOrFail($phaseId);
+        (new FokusplanPhaseService())->deletePhase($phase);
+    }
+
     // ---- Steps ----
 
-    public function addStep()
+    public function addStep(?int $phaseId = null)
     {
         $this->resetStepForm();
-        $this->editingStepId = null;
+        $this->stepPhaseId = $phaseId;
         $this->showStepModal = true;
     }
 
@@ -84,6 +138,7 @@ class Show extends Component
         $step = $this->plan->steps()->findOrFail($stepId);
 
         $this->editingStepId = $step->id;
+        $this->stepPhaseId = $step->fokusplan_phase_id;
         $this->stepTitle = $step->title;
         $this->stepDetails = $step->details ?? '';
         $this->stepLead = $step->lead ?? '';
@@ -100,9 +155,17 @@ class Show extends Component
             return;
         }
 
+        // Phase validieren (muss zum Plan gehören)
+        $phaseId = null;
+        if ($this->stepPhaseId) {
+            $phase = $this->plan->phases()->find($this->stepPhaseId);
+            $phaseId = $phase?->id;
+        }
+
         $service = new FokusplanStepService();
 
         $data = [
+            'fokusplan_phase_id' => $phaseId,
             'title' => $title,
             'details' => trim($this->stepDetails) ?: null,
             'lead' => trim($this->stepLead) ?: null,
@@ -144,6 +207,7 @@ class Show extends Component
     protected function resetStepForm(): void
     {
         $this->editingStepId = null;
+        $this->stepPhaseId = null;
         $this->stepTitle = '';
         $this->stepDetails = '';
         $this->stepLead = '';
@@ -154,11 +218,16 @@ class Show extends Component
 
     public function render()
     {
-        $steps = $this->plan->steps()->orderBy('position')->get();
+        $phases = $this->plan->phases()->with('steps')->orderBy('position')->get();
+        $looseSteps = $this->plan->steps()->whereNull('fokusplan_phase_id')->orderBy('position')->get();
+        $allSteps = $this->plan->steps()->get();
 
         return view('fokusplan::livewire.plan.show', [
-            'steps' => $steps,
+            'phases' => $phases,
+            'looseSteps' => $looseSteps,
             'statuses' => FokusplanStep::STATUSES,
+            'totalSteps' => $allSteps->count(),
+            'doneSteps' => $allSteps->where('status', FokusplanStep::STATUS_DONE)->count(),
         ])->layout('platform::layouts.app');
     }
 }

@@ -75,6 +75,11 @@ class FokusplanServiceProvider extends ServiceProvider
             $registry->register(new \Platform\Fokusplan\Tools\UpdatePlanTool());
             $registry->register(new \Platform\Fokusplan\Tools\DeletePlanTool());
 
+            // Phase CRUD
+            $registry->register(new \Platform\Fokusplan\Tools\CreatePhaseTool());
+            $registry->register(new \Platform\Fokusplan\Tools\UpdatePhaseTool());
+            $registry->register(new \Platform\Fokusplan\Tools\DeletePhaseTool());
+
             // Step CRUD
             $registry->register(new \Platform\Fokusplan\Tools\CreateStepTool());
             $registry->register(new \Platform\Fokusplan\Tools\UpdateStepTool());

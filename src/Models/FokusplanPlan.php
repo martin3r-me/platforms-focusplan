@@ -55,6 +55,11 @@ class FokusplanPlan extends Model
         return $this->belongsTo(\Platform\Core\Models\User::class, 'created_by_user_id');
     }
 
+    public function phases(): HasMany
+    {
+        return $this->hasMany(FokusplanPhase::class, 'fokusplan_plan_id')->orderBy('position');
+    }
+
     public function steps(): HasMany
     {
         return $this->hasMany(FokusplanStep::class, 'fokusplan_plan_id')->orderBy('position');

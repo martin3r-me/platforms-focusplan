@@ -34,6 +34,10 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                     'type' => 'integer',
                     'description' => 'ID des Steps (ERFORDERLICH).',
                 ],
+                'phase_id' => [
+                    'type' => ['integer', 'null'],
+                    'description' => 'Optional: Verschiebt den Step in diese Phase (muss zum selben Plan gehören). null = aus Phase entfernen.',
+                ],
                 'title' => ['type' => 'string', 'description' => 'Optional: Neuer Titel.'],
                 'details' => ['type' => 'string', 'description' => 'Optional: Details.'],
                 'lead' => ['type' => 'string', 'description' => 'Optional: Lead.'],
@@ -79,6 +83,17 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                     return ToolResult::error('VALIDATION_ERROR', 'Ungültiger Status. Erlaubt: open, in_progress, done.');
                 }
                 $data['status'] = $arguments['status'];
+            }
+            if (array_key_exists('phase_id', $arguments)) {
+                if ($arguments['phase_id'] === null || $arguments['phase_id'] === 0) {
+                    $data['fokusplan_phase_id'] = null;
+                } else {
+                    $phase = $step->plan?->phases()->find((int) $arguments['phase_id']);
+                    if (!$phase) {
+                        return ToolResult::error('VALIDATION_ERROR', 'phase_id gehört nicht zum Plan dieses Steps.');
+                    }
+                    $data['fokusplan_phase_id'] = $phase->id;
+                }
             }
             if (isset($data['title']) && trim((string) $data['title']) === '') {
                 return ToolResult::error('VALIDATION_ERROR', 'title darf nicht leer sein.');

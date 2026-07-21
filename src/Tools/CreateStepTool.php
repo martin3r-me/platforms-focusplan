@@ -35,6 +35,10 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                     'type' => 'integer',
                     'description' => 'ID des Fokusplans (ERFORDERLICH).',
                 ],
+                'phase_id' => [
+                    'type' => 'integer',
+                    'description' => 'Optional: ID der Phase, der der Step zugeordnet wird. Muss zum Plan gehören.',
+                ],
                 'title' => [
                     'type' => 'string',
                     'description' => 'Titel des Steps (ERFORDERLICH).',
@@ -82,7 +86,17 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 $status = FokusplanStep::STATUS_OPEN;
             }
 
+            $phaseId = null;
+            if (!empty($arguments['phase_id'])) {
+                $phase = $plan->phases()->find((int) $arguments['phase_id']);
+                if (!$phase) {
+                    return ToolResult::error('VALIDATION_ERROR', 'phase_id gehört nicht zu diesem Plan.');
+                }
+                $phaseId = $phase->id;
+            }
+
             $step = (new FokusplanStepService())->createStep($plan, [
+                'fokusplan_phase_id' => $phaseId,
                 'title' => $title,
                 'details' => $arguments['details'] ?? null,
                 'lead' => $arguments['lead'] ?? null,
@@ -96,6 +110,7 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 'id' => $step->id,
                 'uuid' => $step->uuid,
                 'plan_id' => $plan->id,
+                'phase_id' => $step->fokusplan_phase_id,
                 'title' => $step->title,
                 'status' => $step->status,
                 'position' => $step->position,
