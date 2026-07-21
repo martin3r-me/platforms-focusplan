@@ -1,17 +1,25 @@
 <x-ui-page>
+    {{-- Navbar --}}
     <x-slot name="navbar">
-        <x-ui-page-navbar title="Fokuspläne" icon="heroicon-o-flag">
-            <x-slot name="actions">
-                <x-ui-button variant="primary" size="sm" wire:click="createPlan">
-                    <span class="flex items-center gap-1.5">
-                        @svg('heroicon-o-plus', 'w-4 h-4')
-                        <span>Neuer Fokusplan</span>
-                    </span>
-                </x-ui-button>
-            </x-slot>
-        </x-ui-page-navbar>
+        <x-ui-page-navbar title="Fokusplan" icon="heroicon-o-flag" />
     </x-slot>
 
+    {{-- Actionbar --}}
+    <x-slot name="actionbar">
+        <x-ui-page-actionbar :breadcrumbs="[
+            ['label' => 'Fokusplan', 'icon' => 'flag', 'href' => route('fokusplan.dashboard')],
+            ['label' => 'Alle Fokuspläne'],
+        ]">
+            <x-ui-button variant="primary" size="sm" wire:click="createPlan">
+                <span class="flex items-center gap-1.5">
+                    @svg('heroicon-o-plus', 'w-4 h-4')
+                    <span>Neuer Fokusplan</span>
+                </span>
+            </x-ui-button>
+        </x-ui-page-actionbar>
+    </x-slot>
+
+    {{-- Hauptinhalt --}}
     <x-ui-page-container>
         <div class="space-y-6">
             <div class="max-w-sm">

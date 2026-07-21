@@ -1,56 +1,55 @@
-<div x-data="{ collapsed: false }" class="h-full flex flex-col">
-    {{-- Search --}}
-    <div class="p-3 border-b border-[var(--ui-border)]/40">
-        <div class="relative">
-            @svg('heroicon-o-magnifying-glass', 'w-4 h-4 text-[var(--ui-muted)] absolute left-2.5 top-1/2 -translate-y-1/2')
-            <input
-                wire:model.live.debounce.300ms="sidebarSearch"
-                type="text"
-                placeholder="Suche..."
-                class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-[var(--ui-muted-5)] border border-[var(--ui-border)]/40 text-[var(--ui-secondary)] placeholder-[var(--ui-muted)] focus:outline-none focus:border-[var(--ui-primary)]/40"
-            />
-        </div>
+{{--
+    Modul-Sidebar für Fokusplan.
+    WICHTIG: KEIN eigenes x-data — der `collapsed`-Scope kommt vom Core-Sidebar-Wrapper
+    (app.blade.php → @livewire('fokusplan.sidebar') liegt in x-data="sidebarState()").
+    Nutzt x-ui-sidebar-list / x-ui-sidebar-item; collapsed über x-show gesteuert.
+--}}
+<div>
+    {{-- Modul-Header --}}
+    <div x-show="!collapsed" class="p-3 text-sm italic text-[var(--ui-secondary)] uppercase border-b border-[var(--ui-border)] mb-2">
+        Fokusplan
     </div>
 
-    <div class="flex-1 overflow-y-auto p-2 space-y-1">
-        {{-- Dashboard --}}
-        <a href="{{ route('fokusplan.dashboard') }}" wire:navigate
-           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)] transition-colors">
-            @svg('heroicon-o-home', 'w-4 h-4 text-[var(--ui-muted)]')
-            <span>Dashboard</span>
-        </a>
+    {{-- Navigation --}}
+    <x-ui-sidebar-list label="Navigation">
+        <x-ui-sidebar-item :href="route('fokusplan.dashboard')">
+            @svg('heroicon-o-home', 'w-4 h-4 text-[var(--ui-secondary)]')
+            <span class="ml-2 text-sm">Dashboard</span>
+        </x-ui-sidebar-item>
+        <x-ui-sidebar-item :href="route('fokusplan.plans.index')">
+            @svg('heroicon-o-flag', 'w-4 h-4 text-[var(--ui-secondary)]')
+            <span class="ml-2 text-sm">Alle Fokuspläne</span>
+        </x-ui-sidebar-item>
+        <x-ui-sidebar-item :href="route('fokusplan.dashboard')" type="button" wire:click="createPlan">
+            @svg('heroicon-o-plus', 'w-4 h-4 text-[var(--ui-secondary)]')
+            <span class="ml-2 text-sm">Neuer Fokusplan</span>
+        </x-ui-sidebar-item>
+    </x-ui-sidebar-list>
 
-        {{-- Alle Pläne --}}
-        <a href="{{ route('fokusplan.plans.index') }}" wire:navigate
-           class="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)] transition-colors">
-            @svg('heroicon-o-flag', 'w-4 h-4 text-[var(--ui-muted)]')
-            <span>Alle Fokuspläne</span>
-        </a>
+    {{-- Fokuspläne --}}
+    <x-ui-sidebar-list label="Fokuspläne">
+        @forelse($plans as $plan)
+            <x-ui-sidebar-item :href="route('fokusplan.plans.show', $plan)">
+                @svg('heroicon-o-flag', 'w-4 h-4 text-[var(--ui-muted)]')
+                <span class="ml-2 text-sm truncate">{{ $plan->title }}</span>
+                <x-slot name="trailing">
+                    <span class="text-xs text-[var(--ui-muted)]">{{ $plan->steps_count }}</span>
+                </x-slot>
+            </x-ui-sidebar-item>
+        @empty
+            <div class="px-2 py-1 text-xs text-[var(--ui-muted)]">Keine Pläne</div>
+        @endforelse
+    </x-ui-sidebar-list>
 
-        {{-- Quick Action --}}
-        <div class="pt-2 pb-1">
-            <button wire:click="createPlan"
-                    class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)] transition-colors w-full">
-                @svg('heroicon-o-plus', 'w-3.5 h-3.5')
-                <span>Neuer Fokusplan</span>
-            </button>
-        </div>
-
-        {{-- Pläne --}}
-        <div class="pt-2">
-            <div class="px-3 pb-1">
-                <span class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)]">Fokuspläne</span>
-            </div>
-            @forelse($plans as $plan)
-                <a href="{{ route('fokusplan.plans.show', $plan) }}" wire:navigate
-                   class="flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)] transition-colors truncate">
-                    @svg('heroicon-o-flag', 'w-3.5 h-3.5 text-[var(--ui-muted)] flex-shrink-0')
-                    <span class="truncate">{{ $plan->title }}</span>
-                    <span class="ml-auto text-[10px] text-[var(--ui-muted)]">{{ $plan->steps_count }}</span>
-                </a>
-            @empty
-                <div class="px-3 py-2 text-xs text-[var(--ui-muted)]">Keine Pläne</div>
-            @endforelse
+    {{-- Collapsed: nur Icons --}}
+    <div x-show="collapsed" class="px-2 py-2 border-b border-[var(--ui-border)]">
+        <div class="flex flex-col gap-2">
+            <a href="{{ route('fokusplan.dashboard') }}" wire:navigate class="flex items-center justify-center p-2 rounded-md text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)]">
+                @svg('heroicon-o-home', 'w-5 h-5')
+            </a>
+            <a href="{{ route('fokusplan.plans.index') }}" wire:navigate class="flex items-center justify-center p-2 rounded-md text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)]">
+                @svg('heroicon-o-flag', 'w-5 h-5')
+            </a>
         </div>
     </div>
 </div>

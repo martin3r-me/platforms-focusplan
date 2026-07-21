@@ -1,46 +1,35 @@
 <x-ui-page>
+    {{-- Navbar --}}
     <x-slot name="navbar">
-        <x-ui-page-navbar :title="$plan->title" icon="heroicon-o-flag">
-            <x-slot name="actions">
-                <x-ui-button variant="secondary-outline" size="xs" wire:click="openPlanModal">
-                    @svg('heroicon-o-pencil', 'w-3.5 h-3.5')
-                </x-ui-button>
-                <x-ui-button variant="primary" size="xs" wire:click="addStep">
-                    <span class="flex items-center gap-1.5">
-                        @svg('heroicon-o-plus', 'w-3.5 h-3.5')
-                        <span>Neuer Step</span>
-                    </span>
-                </x-ui-button>
-            </x-slot>
-        </x-ui-page-navbar>
+        <x-ui-page-navbar title="Fokusplan" icon="heroicon-o-flag" />
     </x-slot>
 
+    {{-- Actionbar --}}
+    <x-slot name="actionbar">
+        <x-ui-page-actionbar :breadcrumbs="[
+            ['label' => 'Fokusplan', 'icon' => 'flag', 'href' => route('fokusplan.dashboard')],
+            ['label' => $plan->title],
+        ]">
+            <x-ui-button variant="secondary-outline" size="sm" wire:click="openPlanModal">
+                <span class="flex items-center gap-1.5">
+                    @svg('heroicon-o-pencil', 'w-3.5 h-3.5')
+                    <span>Kopf bearbeiten</span>
+                </span>
+            </x-ui-button>
+            <x-ui-button variant="primary" size="sm" wire:click="addStep">
+                <span class="flex items-center gap-1.5">
+                    @svg('heroicon-o-plus', 'w-3.5 h-3.5')
+                    <span>Neuer Step</span>
+                </span>
+            </x-ui-button>
+        </x-ui-page-actionbar>
+    </x-slot>
+
+    {{-- Hauptinhalt --}}
     <x-ui-page-container>
         <div class="space-y-6">
-            {{-- Kopf-Infos --}}
-            <div class="flex flex-wrap items-center gap-4 text-xs text-[var(--ui-muted)]">
-                @if($plan->fachbereich)
-                    <span class="flex items-center gap-1">
-                        @svg('heroicon-o-building-office-2', 'w-3.5 h-3.5')
-                        <strong class="text-[var(--ui-secondary)]">Fachbereich:</strong> {{ $plan->fachbereich }}
-                    </span>
-                @endif
-                @if($plan->responsible)
-                    <span class="flex items-center gap-1">
-                        @svg('heroicon-o-user', 'w-3.5 h-3.5')
-                        <strong class="text-[var(--ui-secondary)]">Verantwortlich:</strong> {{ $plan->responsible }}
-                    </span>
-                @endif
-                @if($plan->year)
-                    <span class="flex items-center gap-1">
-                        @svg('heroicon-o-calendar', 'w-3.5 h-3.5')
-                        {{ $plan->year }}
-                    </span>
-                @endif
-            </div>
-
             {{-- Aktionsplan --}}
-            <x-ui-panel title="Aktionsplan" subtitle="Steps, Details, Lead, Kennzahl, Deadline, Status">
+            <x-ui-panel title="Aktionsplan" subtitle="Steps · Details · Lead · Kennzahl · Deadline · Status">
                 @if($steps->isNotEmpty())
                     <x-ui-table compact="true">
                         <x-ui-table-header>
@@ -75,13 +64,6 @@
                                         <span class="text-sm">{{ $step->deadline ?: '–' }}</span>
                                     </x-ui-table-cell>
                                     <x-ui-table-cell compact="true">
-                                        @php
-                                            $statusVariant = match($step->status) {
-                                                \Platform\Fokusplan\Models\FokusplanStep::STATUS_DONE => 'success',
-                                                \Platform\Fokusplan\Models\FokusplanStep::STATUS_IN_PROGRESS => 'warning',
-                                                default => 'secondary',
-                                            };
-                                        @endphp
                                         <select
                                             wire:change="setStatus({{ $step->id }}, $event.target.value)"
                                             class="text-xs rounded-lg bg-[var(--ui-muted-5)] border border-[var(--ui-border)]/40 px-2 py-1 text-[var(--ui-secondary)] focus:outline-none focus:border-[var(--ui-primary)]/40"
@@ -124,6 +106,34 @@
             </x-ui-panel>
         </div>
     </x-ui-page-container>
+
+    {{-- Linke Sidebar: Kopf-Infos --}}
+    <x-slot name="sidebar">
+        <x-ui-page-sidebar title="Details" width="w-80" :defaultOpen="true">
+            <div class="p-5 space-y-4">
+                <div>
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Fachbereich</div>
+                    <div class="text-sm text-[var(--ui-secondary)]">{{ $plan->fachbereich ?: '–' }}</div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Verantwortlich</div>
+                    <div class="text-sm text-[var(--ui-secondary)]">{{ $plan->responsible ?: '–' }}</div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Jahr</div>
+                    <div class="text-sm text-[var(--ui-secondary)]">{{ $plan->year ?: '–' }}</div>
+                </div>
+                <div class="pt-2">
+                    <x-ui-button variant="secondary-outline" size="sm" wire:click="openPlanModal" class="w-full">
+                        <span class="flex items-center gap-2 justify-center">
+                            @svg('heroicon-o-pencil', 'w-4 h-4')
+                            <span>Kopf bearbeiten</span>
+                        </span>
+                    </x-ui-button>
+                </div>
+            </div>
+        </x-ui-page-sidebar>
+    </x-slot>
 
     {{-- Plan-Header Modal --}}
     @if($showPlanModal)

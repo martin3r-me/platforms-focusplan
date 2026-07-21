@@ -1,45 +1,31 @@
 <x-ui-page>
+    {{-- Navbar --}}
     <x-slot name="navbar">
-        <x-ui-page-navbar title="Fokusplan" icon="heroicon-o-flag">
-            <x-slot name="actions">
-                <x-ui-button variant="primary" size="sm" wire:click="createPlan">
-                    <span class="flex items-center gap-1.5">
-                        @svg('heroicon-o-plus', 'w-4 h-4')
-                        <span>Neuer Fokusplan</span>
-                    </span>
-                </x-ui-button>
-            </x-slot>
-        </x-ui-page-navbar>
+        <x-ui-page-navbar title="Fokusplan" icon="heroicon-o-flag" />
     </x-slot>
 
+    {{-- Actionbar --}}
+    <x-slot name="actionbar">
+        <x-ui-page-actionbar :breadcrumbs="[
+            ['label' => 'Fokusplan', 'icon' => 'flag'],
+        ]">
+            <x-ui-button variant="primary" size="sm" wire:click="createPlan">
+                <span class="flex items-center gap-1.5">
+                    @svg('heroicon-o-plus', 'w-4 h-4')
+                    <span>Neuer Fokusplan</span>
+                </span>
+            </x-ui-button>
+        </x-ui-page-actionbar>
+    </x-slot>
+
+    {{-- Hauptinhalt --}}
     <x-ui-page-container>
         <div class="space-y-8">
             {{-- Stats --}}
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <x-ui-dashboard-tile
-                    title="Fokuspläne"
-                    :count="$totalPlans"
-                    subtitle="Gesamt"
-                    icon="flag"
-                    variant="secondary"
-                    size="lg"
-                />
-                <x-ui-dashboard-tile
-                    title="Steps"
-                    :count="$totalSteps"
-                    subtitle="Gesamt"
-                    icon="list-bullet"
-                    variant="secondary"
-                    size="lg"
-                />
-                <x-ui-dashboard-tile
-                    title="Offen"
-                    :count="$openSteps"
-                    subtitle="Noch nicht erledigt"
-                    icon="clock"
-                    variant="warning"
-                    size="lg"
-                />
+                <x-ui-dashboard-tile title="Fokuspläne" :count="$totalPlans" subtitle="Gesamt" icon="flag" variant="secondary" size="lg" />
+                <x-ui-dashboard-tile title="Steps" :count="$totalSteps" subtitle="Gesamt" icon="list-bullet" variant="secondary" size="lg" />
+                <x-ui-dashboard-tile title="Offen" :count="$openSteps" subtitle="Noch nicht erledigt" icon="clock" variant="warning" size="lg" />
             </div>
 
             {{-- Pläne --}}
@@ -82,4 +68,29 @@
             </x-ui-panel>
         </div>
     </x-ui-page-container>
+
+    {{-- Linke Sidebar --}}
+    <x-slot name="sidebar">
+        <x-ui-page-sidebar title="Übersicht" width="w-80" :defaultOpen="true">
+            <div class="p-5 space-y-6">
+                <div>
+                    <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-3">Statistiken</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-3 bg-[var(--ui-muted-5)] rounded-lg border border-[var(--ui-border)]/40">
+                            <span class="text-xs text-[var(--ui-muted)]">Fokuspläne</span>
+                            <span class="text-sm font-bold text-[var(--ui-secondary)]">{{ $totalPlans }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-[var(--ui-muted-5)] rounded-lg border border-[var(--ui-border)]/40">
+                            <span class="text-xs text-[var(--ui-muted)]">Steps gesamt</span>
+                            <span class="text-sm font-bold text-[var(--ui-secondary)]">{{ $totalSteps }}</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-[var(--ui-muted-5)] rounded-lg border border-[var(--ui-border)]/40">
+                            <span class="text-xs text-[var(--ui-muted)]">Offen</span>
+                            <span class="text-sm font-bold text-[var(--ui-secondary)]">{{ $openSteps }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </x-ui-page-sidebar>
+    </x-slot>
 </x-ui-page>
