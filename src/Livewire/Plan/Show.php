@@ -30,12 +30,14 @@ class Show extends Component
     public bool $showStepModal = false;
     public ?int $editingStepId = null;
     public ?int $stepPhaseId = null;
+    public string $stepGoal = '';
     public string $stepTitle = '';
     public string $stepDetails = '';
     public string $stepLead = '';
     public string $stepKennzahl = '';
     public string $stepDeadline = '';
     public string $stepStatus = FokusplanStep::STATUS_OPEN;
+    public string $stepStatusNote = '';
 
     public function mount(FokusplanPlan $plan)
     {
@@ -139,12 +141,14 @@ class Show extends Component
 
         $this->editingStepId = $step->id;
         $this->stepPhaseId = $step->fokusplan_phase_id;
+        $this->stepGoal = $step->goal ?? '';
         $this->stepTitle = $step->title;
         $this->stepDetails = $step->details ?? '';
         $this->stepLead = $step->lead ?? '';
         $this->stepKennzahl = $step->kennzahl ?? '';
         $this->stepDeadline = $step->deadline?->format('Y-m-d') ?? '';
         $this->stepStatus = $step->status;
+        $this->stepStatusNote = $step->status_note ?? '';
         $this->showStepModal = true;
     }
 
@@ -166,6 +170,7 @@ class Show extends Component
 
         $data = [
             'fokusplan_phase_id' => $phaseId,
+            'goal' => trim($this->stepGoal) ?: null,
             'title' => $title,
             'details' => trim($this->stepDetails) ?: null,
             'lead' => trim($this->stepLead) ?: null,
@@ -174,6 +179,7 @@ class Show extends Component
             'status' => in_array($this->stepStatus, array_keys(FokusplanStep::STATUSES), true)
                 ? $this->stepStatus
                 : FokusplanStep::STATUS_OPEN,
+            'status_note' => trim($this->stepStatusNote) ?: null,
         ];
 
         if ($this->editingStepId) {
@@ -208,12 +214,14 @@ class Show extends Component
     {
         $this->editingStepId = null;
         $this->stepPhaseId = null;
+        $this->stepGoal = '';
         $this->stepTitle = '';
         $this->stepDetails = '';
         $this->stepLead = '';
         $this->stepKennzahl = '';
         $this->stepDeadline = '';
         $this->stepStatus = FokusplanStep::STATUS_OPEN;
+        $this->stepStatusNote = '';
     }
 
     public function render()

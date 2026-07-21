@@ -6,7 +6,12 @@
         'border-l-[var(--ui-muted)]' => $step->status === 'open',
     ])>
     <div class="flex items-start justify-between gap-2">
-        <p class="text-sm font-semibold text-[var(--ui-secondary)] leading-snug">{{ $step->title }}</p>
+        <div class="min-w-0">
+            @if($step->goal)
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-primary)] mb-0.5">{{ $step->goal }}</div>
+            @endif
+            <p class="text-sm font-semibold text-[var(--ui-secondary)] leading-snug">{{ $step->title }}</p>
+        </div>
         <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
             <button wire:click="editStep({{ $step->id }})" class="p-1 rounded-lg hover:bg-[var(--ui-muted-5)] text-[var(--ui-muted)] hover:text-[var(--ui-secondary)]">
                 @svg('heroicon-o-pencil', 'w-3.5 h-3.5')
@@ -33,6 +38,10 @@
         @endif
         @include('fokusplan::livewire.partials.step-status-select', ['step' => $step, 'statuses' => $statuses])
     </div>
+
+    @if($step->status_note)
+        <p class="mt-2 text-xs text-[var(--ui-muted)] italic leading-snug">{{ $step->status_note }}</p>
+    @endif
 
     <div class="mt-2.5 pt-2.5 border-t border-[var(--ui-border)]/40">
         @include('fokusplan::livewire.partials.lead-chip', ['lead' => $step->lead])

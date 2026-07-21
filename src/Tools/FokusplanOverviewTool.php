@@ -48,6 +48,8 @@ class FokusplanOverviewTool implements ToolContract, ToolMetadataContract
                 ],
                 'FokusplanStep' => [
                     'phase_id' => 'Optionale Zuordnung zu einer Phase (sonst phasenlos am Plan)',
+                    'goal' => 'Optional: Übergeordnetes Ziel',
+                    'status_note' => 'Optional: Freitext-Status/Notiz (z.B. "Hold 06/26")',
                     'title' => 'Steps / Titel des Arbeitsschritts',
                     'details' => 'Details (Freitext, ein Punkt pro Zeile)',
                     'lead' => 'Lead / Verantwortlicher des Steps',

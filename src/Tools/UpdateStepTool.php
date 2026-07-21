@@ -38,8 +38,10 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                     'type' => ['integer', 'null'],
                     'description' => 'Optional: Verschiebt den Step in diese Phase (muss zum selben Plan gehören). null = aus Phase entfernen.',
                 ],
-                'title' => ['type' => 'string', 'description' => 'Optional: Neuer Titel.'],
+                'goal' => ['type' => 'string', 'description' => 'Optional: Übergeordnetes Ziel.'],
+                'title' => ['type' => 'string', 'description' => 'Optional: Neuer Titel / Maßnahme.'],
                 'details' => ['type' => 'string', 'description' => 'Optional: Details.'],
+                'status_note' => ['type' => 'string', 'description' => 'Optional: Freitext-Status/Notiz.'],
                 'lead' => ['type' => 'string', 'description' => 'Optional: Lead.'],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
                 'deadline' => ['type' => ['string', 'null'], 'description' => 'Optional: Deadline als Datum YYYY-MM-DD. Leerstring/null entfernt die Deadline.'],
@@ -73,7 +75,7 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
             }
 
             $data = [];
-            foreach (['title', 'details', 'lead', 'kennzahl'] as $field) {
+            foreach (['goal', 'title', 'details', 'lead', 'kennzahl', 'status_note'] as $field) {
                 if (array_key_exists($field, $arguments)) {
                     $data[$field] = $arguments[$field];
                 }

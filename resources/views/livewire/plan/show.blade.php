@@ -216,8 +216,9 @@
     @if($showStepModal)
         <x-ui-modal wire:model="showStepModal" :title="$editingStepId ? 'Step bearbeiten' : 'Neuer Step'">
             <div class="space-y-4">
-                <x-ui-input-text wire:model="stepTitle" label="Steps (Titel)" required />
-                <x-ui-input-textarea wire:model="stepDetails" label="Details" rows="4" placeholder="Ein Punkt pro Zeile …" />
+                <x-ui-input-text wire:model="stepGoal" label="Übergeordnetes Ziel" placeholder="optional" />
+                <x-ui-input-text wire:model="stepTitle" label="Steps / Maßnahme" required />
+                <x-ui-input-textarea wire:model="stepDetails" label="Details" rows="3" placeholder="Ein Punkt pro Zeile …" />
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <x-ui-input-select
                         name="stepPhaseId"
@@ -241,6 +242,7 @@
                     <x-ui-input-text wire:model="stepKennzahl" label="Kennzahl" />
                     <x-ui-input-text wire:model="stepDeadline" type="date" label="Deadline" />
                 </div>
+                <x-ui-input-textarea wire:model="stepStatusNote" label="Status-Notiz" rows="2" placeholder="z.B. Hold 06/26, 60% erledigt …" />
             </div>
             <x-slot name="footer">
                 <x-ui-button variant="secondary-outline" wire:click="$set('showStepModal', false)">Abbrechen</x-ui-button>

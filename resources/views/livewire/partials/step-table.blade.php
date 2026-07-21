@@ -22,6 +22,9 @@
                 @foreach($steps as $step)
                     <tr class="group border-b border-[var(--ui-border)]/40 last:border-0 hover:bg-[var(--ui-muted-5)]/40 transition-colors">
                         <td class="{{ $td }}">
+                            @if($step->goal)
+                                <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-primary)] mb-0.5 max-w-[15rem]">{{ $step->goal }}</div>
+                            @endif
                             <div class="font-semibold text-[var(--ui-secondary)] max-w-[15rem] leading-snug">{{ $step->title }}</div>
                         </td>
                         <td class="{{ $td }}">
@@ -49,6 +52,9 @@
                         </td>
                         <td class="{{ $td }}">
                             @include('fokusplan::livewire.partials.step-status-select', ['step' => $step, 'statuses' => $statuses])
+                            @if($step->status_note)
+                                <div class="text-xs text-[var(--ui-muted)] mt-1.5 max-w-[12rem] leading-snug">{{ $step->status_note }}</div>
+                            @endif
                         </td>
                         <td class="{{ $td }} text-right">
                             <div class="inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -39,11 +39,13 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                     'type' => 'integer',
                     'description' => 'Optional: ID der Phase, der der Step zugeordnet wird. Muss zum Plan gehören.',
                 ],
+                'goal' => ['type' => 'string', 'description' => 'Optional: Übergeordnetes Ziel des Steps.'],
                 'title' => [
                     'type' => 'string',
-                    'description' => 'Titel des Steps (ERFORDERLICH).',
+                    'description' => 'Titel des Steps / die Maßnahme (ERFORDERLICH).',
                 ],
                 'details' => ['type' => 'string', 'description' => 'Optional: Details (Freitext).'],
+                'status_note' => ['type' => 'string', 'description' => 'Optional: Freitext-Status/Notiz (z.B. "Hold 06/26", "60%").'],
                 'lead' => ['type' => 'string', 'description' => 'Optional: Lead, z.B. "BHG.DIGITAL".'],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
                 'deadline' => ['type' => 'string', 'description' => 'Optional: Deadline als Datum im Format YYYY-MM-DD (z.B. "2026-03-31").'],
@@ -97,12 +99,14 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
 
             $step = (new FokusplanStepService())->createStep($plan, [
                 'fokusplan_phase_id' => $phaseId,
+                'goal' => $arguments['goal'] ?? null,
                 'title' => $title,
                 'details' => $arguments['details'] ?? null,
                 'lead' => $arguments['lead'] ?? null,
                 'kennzahl' => $arguments['kennzahl'] ?? null,
                 'deadline' => !empty($arguments['deadline']) ? $arguments['deadline'] : null,
                 'status' => $status,
+                'status_note' => $arguments['status_note'] ?? null,
                 'created_by_user_id' => $context->user->id,
             ]);
 
