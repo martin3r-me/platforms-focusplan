@@ -28,19 +28,7 @@
                     <x-ui-table-cell compact="true"><span class="text-sm">{{ $step->kennzahl ?: '–' }}</span></x-ui-table-cell>
                     <x-ui-table-cell compact="true"><span class="text-sm">{{ $step->deadline ?: '–' }}</span></x-ui-table-cell>
                     <x-ui-table-cell compact="true">
-                        <select
-                            wire:change="setStatus({{ $step->id }}, $event.target.value)"
-                            @class([
-                                'text-xs rounded-lg border px-2 py-1 focus:outline-none',
-                                'bg-[var(--ui-success)]/10 border-[var(--ui-success)]/40 text-[var(--ui-success)]' => $step->status === 'done',
-                                'bg-[var(--ui-warning)]/10 border-[var(--ui-warning)]/40 text-[var(--ui-warning)]' => $step->status === 'in_progress',
-                                'bg-[var(--ui-muted-5)] border-[var(--ui-border)]/40 text-[var(--ui-secondary)]' => $step->status === 'open',
-                            ])
-                        >
-                            @foreach($statuses as $value => $label)
-                                <option value="{{ $value }}" @selected($step->status === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
+                        @include('fokusplan::livewire.partials.step-status-select', ['step' => $step, 'statuses' => $statuses])
                     </x-ui-table-cell>
                     <x-ui-table-cell compact="true" align="right">
                         <div class="flex items-center justify-end gap-1">

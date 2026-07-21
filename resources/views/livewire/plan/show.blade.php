@@ -27,83 +27,108 @@
 
     {{-- Hauptinhalt --}}
     <x-ui-page-container>
-        <div class="space-y-6">
-            {{-- Fortschritt gesamt --}}
-            <div class="flex items-center gap-4">
-                <div class="flex-1">
+        <div x-data="{ view: (window.localStorage.getItem('fokusplan_view') || 'sektionen') }"
+             x-init="$watch('view', v => window.localStorage.setItem('fokusplan_view', v))"
+             class="space-y-6">
+
+            {{-- Fortschritt + Ansicht-Umschalter --}}
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="flex-1 min-w-[200px]">
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-xs font-medium text-[var(--ui-muted)]">Fortschritt</span>
-                        <span class="text-xs text-[var(--ui-muted)]">{{ $doneSteps }}/{{ $totalSteps }} erledigt</span>
+                        <span class="text-xs text-[var(--ui-muted)] tabular-nums">{{ $doneSteps }}/{{ $totalSteps }} erledigt</span>
                     </div>
                     <div class="h-2 rounded-full bg-[var(--ui-muted-5)] overflow-hidden">
                         <div class="h-full rounded-full bg-[var(--ui-primary)] transition-all"
                              style="width: {{ $totalSteps > 0 ? round($doneSteps / $totalSteps * 100) : 0 }}%"></div>
                     </div>
                 </div>
+
+                <div class="inline-flex bg-[var(--ui-muted-5)] border border-[var(--ui-border)]/60 rounded-lg p-0.5 gap-0.5 flex-shrink-0">
+                    <button type="button" @click="view = 'sektionen'"
+                        :class="view === 'sektionen' ? 'bg-[var(--ui-surface)] text-[var(--ui-secondary)] shadow-sm' : 'text-[var(--ui-muted)]'"
+                        class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5">
+                        @svg('heroicon-o-bars-3', 'w-3.5 h-3.5')
+                        <span>Sektionen</span>
+                    </button>
+                    <button type="button" @click="view = 'board'"
+                        :class="view === 'board' ? 'bg-[var(--ui-surface)] text-[var(--ui-secondary)] shadow-sm' : 'text-[var(--ui-muted)]'"
+                        class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5">
+                        @svg('heroicon-o-view-columns', 'w-3.5 h-3.5')
+                        <span>Board</span>
+                    </button>
+                </div>
             </div>
 
-            {{-- Phasen --}}
-            @forelse($phases as $phase)
-                @php
-                    $phaseDone = $phase->steps->where('status', 'done')->count();
-                    $phaseTotal = $phase->steps->count();
-                @endphp
-                <x-ui-panel>
-                    <div class="flex items-start justify-between gap-3 mb-4">
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[var(--ui-primary)]/10 text-[var(--ui-primary)] text-xs font-bold">{{ $loop->iteration }}</span>
-                                <h3 class="text-base font-semibold text-[var(--ui-secondary)] truncate">{{ $phase->title }}</h3>
-                                <x-ui-badge variant="secondary" size="sm">{{ $phaseDone }}/{{ $phaseTotal }}</x-ui-badge>
+            {{-- ===== Sektionen (Default) ===== --}}
+            <div x-show="view === 'sektionen'" class="space-y-6">
+                @forelse($phases as $phase)
+                    @php
+                        $phaseDone = $phase->steps->where('status', 'done')->count();
+                        $phaseTotal = $phase->steps->count();
+                    @endphp
+                    <x-ui-panel>
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[var(--ui-primary)]/10 text-[var(--ui-primary)] text-xs font-bold">{{ $loop->iteration }}</span>
+                                    <h3 class="text-base font-semibold text-[var(--ui-secondary)] truncate">{{ $phase->title }}</h3>
+                                    <x-ui-badge variant="secondary" size="sm">{{ $phaseDone }}/{{ $phaseTotal }}</x-ui-badge>
+                                </div>
+                                @if($phase->description)
+                                    <p class="text-sm text-[var(--ui-muted)] mt-1">{{ $phase->description }}</p>
+                                @endif
                             </div>
-                            @if($phase->description)
-                                <p class="text-sm text-[var(--ui-muted)] mt-1">{{ $phase->description }}</p>
-                            @endif
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <x-ui-button variant="secondary-outline" size="xs" wire:click="addStep({{ $phase->id }})">
+                                    <span class="flex items-center gap-1">@svg('heroicon-o-plus', 'w-3.5 h-3.5')<span>Step</span></span>
+                                </x-ui-button>
+                                <x-ui-button variant="secondary-outline" size="xs" wire:click="editPhase({{ $phase->id }})">
+                                    @svg('heroicon-o-pencil', 'w-3.5 h-3.5')
+                                </x-ui-button>
+                                <x-ui-button variant="danger-outline" size="xs"
+                                    wire:click="deletePhase({{ $phase->id }})"
+                                    wire:confirm="Phase löschen? Die Steps bleiben (ohne Phase) erhalten.">
+                                    @svg('heroicon-o-trash', 'w-3.5 h-3.5')
+                                </x-ui-button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1 flex-shrink-0">
-                            <x-ui-button variant="secondary-outline" size="xs" wire:click="addStep({{ $phase->id }})">
-                                <span class="flex items-center gap-1">@svg('heroicon-o-plus', 'w-3.5 h-3.5')<span>Step</span></span>
-                            </x-ui-button>
-                            <x-ui-button variant="secondary-outline" size="xs" wire:click="editPhase({{ $phase->id }})">
-                                @svg('heroicon-o-pencil', 'w-3.5 h-3.5')
-                            </x-ui-button>
-                            <x-ui-button variant="danger-outline" size="xs"
-                                wire:click="deletePhase({{ $phase->id }})"
-                                wire:confirm="Phase löschen? Die Steps bleiben (ohne Phase) erhalten.">
-                                @svg('heroicon-o-trash', 'w-3.5 h-3.5')
-                            </x-ui-button>
-                        </div>
-                    </div>
 
-                    @include('fokusplan::livewire.partials.step-table', ['steps' => $phase->steps, 'statuses' => $statuses, 'phaseId' => $phase->id])
-                </x-ui-panel>
-            @empty
-                <div class="py-12 text-center">
-                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--ui-muted-5)] mb-3">
-                        @svg('heroicon-o-rectangle-stack', 'w-6 h-6 text-[var(--ui-muted)]')
-                    </div>
-                    <p class="text-sm text-[var(--ui-muted)] mb-4">Noch keine Phasen. Lege die erste Phase (z.B. „Phase 1") an.</p>
-                    <x-ui-button variant="primary" size="sm" wire:click="addPhase">
-                        <span class="flex items-center gap-2">@svg('heroicon-o-plus', 'w-4 h-4')<span>Erste Phase anlegen</span></span>
-                    </x-ui-button>
-                </div>
-            @endforelse
-
-            {{-- Steps ohne Phase --}}
-            @if($looseSteps->isNotEmpty())
-                <x-ui-panel>
-                    <div class="flex items-start justify-between gap-3 mb-4">
-                        <div>
-                            <h3 class="text-base font-semibold text-[var(--ui-secondary)]">Ohne Phase</h3>
-                            <p class="text-xs text-[var(--ui-muted)]">Steps, die (noch) keiner Phase zugeordnet sind</p>
+                        @include('fokusplan::livewire.partials.step-table', ['steps' => $phase->steps, 'statuses' => $statuses, 'phaseId' => $phase->id])
+                    </x-ui-panel>
+                @empty
+                    <div class="py-12 text-center">
+                        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--ui-muted-5)] mb-3">
+                            @svg('heroicon-o-rectangle-stack', 'w-6 h-6 text-[var(--ui-muted)]')
                         </div>
-                        <x-ui-button variant="secondary-outline" size="xs" wire:click="addStep">
-                            <span class="flex items-center gap-1">@svg('heroicon-o-plus', 'w-3.5 h-3.5')<span>Step</span></span>
+                        <p class="text-sm text-[var(--ui-muted)] mb-4">Noch keine Phasen. Lege die erste Phase (z.B. „Phase 1") an.</p>
+                        <x-ui-button variant="primary" size="sm" wire:click="addPhase">
+                            <span class="flex items-center gap-2">@svg('heroicon-o-plus', 'w-4 h-4')<span>Erste Phase anlegen</span></span>
                         </x-ui-button>
                     </div>
-                    @include('fokusplan::livewire.partials.step-table', ['steps' => $looseSteps, 'statuses' => $statuses, 'phaseId' => null])
-                </x-ui-panel>
-            @endif
+                @endforelse
+
+                {{-- Steps ohne Phase --}}
+                @if($looseSteps->isNotEmpty())
+                    <x-ui-panel>
+                        <div class="flex items-start justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="text-base font-semibold text-[var(--ui-secondary)]">Ohne Phase</h3>
+                                <p class="text-xs text-[var(--ui-muted)]">Steps, die (noch) keiner Phase zugeordnet sind</p>
+                            </div>
+                            <x-ui-button variant="secondary-outline" size="xs" wire:click="addStep">
+                                <span class="flex items-center gap-1">@svg('heroicon-o-plus', 'w-3.5 h-3.5')<span>Step</span></span>
+                            </x-ui-button>
+                        </div>
+                        @include('fokusplan::livewire.partials.step-table', ['steps' => $looseSteps, 'statuses' => $statuses, 'phaseId' => null])
+                    </x-ui-panel>
+                @endif
+            </div>
+
+            {{-- ===== Board (Umschalt-Ansicht) ===== --}}
+            <div x-show="view === 'board'" style="display:none">
+                @include('fokusplan::livewire.partials.board', ['phases' => $phases, 'looseSteps' => $looseSteps, 'statuses' => $statuses])
+            </div>
         </div>
     </x-ui-page-container>
 
