@@ -1,0 +1,19 @@
+/vendor/
+/node_modules/
+/.idea/
+/.vscode/
+*.log
+*.cache
+.DS_Store
+Thumbs.db
+composer.lock
+
+# Laravel specific
+.env
+.env.backup
+.phpunit.result.cache
+
+# IDE
+*.swp
+*.swo
+*~

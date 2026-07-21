@@ -1,0 +1,28 @@
+{
+    "name": "martin3r/platforms-fokusplan",
+    "description": "Fokusplan Modul für Platform - Fokuspläne (Aktionspläne) anlegen und ausfüllen",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Platform Team",
+            "email": "team@platform.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Platform\\Fokusplan\\": "src/",
+            "Platform\\Fokusplan\\Database\\": "database/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Platform\\Fokusplan\\FokusplanServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
