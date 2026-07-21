@@ -135,6 +135,21 @@
         </x-ui-page-sidebar>
     </x-slot>
 
+    {{-- Rechte Sidebar (Status-Übersicht) --}}
+    <x-slot name="activity">
+        <x-ui-page-sidebar title="Status" width="w-80" :defaultOpen="false" storeKey="activityOpen" side="right">
+            <div class="p-5 space-y-3">
+                <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)]">Fortschritt</h3>
+                @foreach($statuses as $value => $label)
+                    <div class="flex items-center justify-between p-3 bg-[var(--ui-muted-5)] rounded-lg border border-[var(--ui-border)]/40">
+                        <span class="text-xs text-[var(--ui-muted)]">{{ $label }}</span>
+                        <span class="text-sm font-bold text-[var(--ui-secondary)]">{{ $steps->where('status', $value)->count() }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </x-ui-page-sidebar>
+    </x-slot>
+
     {{-- Plan-Header Modal --}}
     @if($showPlanModal)
         <x-ui-modal wire:model="showPlanModal" title="Fokusplan bearbeiten">

@@ -75,4 +75,40 @@
             </x-ui-panel>
         </div>
     </x-ui-page-container>
+
+    {{-- Linke Sidebar --}}
+    <x-slot name="sidebar">
+        <x-ui-page-sidebar title="Übersicht" width="w-80" :defaultOpen="true">
+            <div class="p-5 space-y-4">
+                <div class="flex items-center justify-between p-3 bg-[var(--ui-muted-5)] rounded-lg border border-[var(--ui-border)]/40">
+                    <span class="text-xs text-[var(--ui-muted)]">Fokuspläne</span>
+                    <span class="text-sm font-bold text-[var(--ui-secondary)]">{{ $plans->count() }}</span>
+                </div>
+                <x-ui-button variant="primary" size="sm" wire:click="createPlan" class="w-full">
+                    <span class="flex items-center gap-2 justify-center">
+                        @svg('heroicon-o-plus', 'w-4 h-4')
+                        <span>Neuer Fokusplan</span>
+                    </span>
+                </x-ui-button>
+            </div>
+        </x-ui-page-sidebar>
+    </x-slot>
+
+    {{-- Rechte Sidebar (Aktivitäten) --}}
+    <x-slot name="activity">
+        <x-ui-page-sidebar title="Aktivitäten" width="w-80" :defaultOpen="false" storeKey="activityOpen" side="right">
+            <div class="p-5 space-y-3">
+                <h3 class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)]">Zuletzt</h3>
+                @forelse($plans->take(6) as $plan)
+                    <a href="{{ route('fokusplan.plans.show', $plan) }}" wire:navigate
+                       class="flex items-center gap-2 text-sm text-[var(--ui-secondary)] hover:text-[var(--ui-primary)] transition-colors truncate">
+                        @svg('heroicon-o-flag', 'w-3.5 h-3.5 text-[var(--ui-muted)] flex-shrink-0')
+                        <span class="truncate">{{ $plan->title }}</span>
+                    </a>
+                @empty
+                    <div class="text-sm text-[var(--ui-muted)]">Keine Aktivitäten.</div>
+                @endforelse
+            </div>
+        </x-ui-page-sidebar>
+    </x-slot>
 </x-ui-page>
