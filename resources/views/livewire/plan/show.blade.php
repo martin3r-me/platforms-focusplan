@@ -39,7 +39,7 @@
                         <span class="text-xs text-[var(--ui-muted)] tabular-nums">{{ $doneSteps }}/{{ $totalSteps }} erledigt</span>
                     </div>
                     <div class="h-2 rounded-full bg-[var(--ui-muted-5)] overflow-hidden">
-                        <div class="h-full rounded-full bg-[var(--ui-primary)] transition-all"
+                        <div class="h-full rounded-full bg-gradient-to-r from-[var(--ui-success)] to-emerald-400 transition-all"
                              style="width: {{ $totalSteps > 0 ? round($doneSteps / $totalSteps * 100) : 0 }}%"></div>
                     </div>
                 </div>
@@ -70,13 +70,20 @@
                     <x-ui-panel>
                         <div class="flex items-start justify-between gap-3 mb-4">
                             <div class="min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[var(--ui-primary)]/10 text-[var(--ui-primary)] text-xs font-bold">{{ $loop->iteration }}</span>
-                                    <h3 class="text-base font-semibold text-[var(--ui-secondary)] truncate">{{ $phase->title }}</h3>
-                                    <x-ui-badge variant="secondary" size="sm">{{ $phaseDone }}/{{ $phaseTotal }}</x-ui-badge>
+                                <div class="flex items-center gap-2.5">
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[var(--ui-primary)]/10 text-[var(--ui-primary)] text-sm font-bold flex-shrink-0">{{ $loop->iteration }}</span>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="text-[15px] font-semibold text-[var(--ui-secondary)] truncate">{{ $phase->title }}</h3>
+                                            <span class="text-xs text-[var(--ui-muted)] tabular-nums flex-shrink-0">{{ $phaseDone }}/{{ $phaseTotal }}</span>
+                                        </div>
+                                        <div class="h-1.5 w-28 rounded-full bg-[var(--ui-muted-5)] overflow-hidden mt-1.5">
+                                            <div class="h-full rounded-full bg-[var(--ui-success)] transition-all" style="width: {{ $phaseTotal > 0 ? round($phaseDone / $phaseTotal * 100) : 0 }}%"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 @if($phase->description)
-                                    <p class="text-sm text-[var(--ui-muted)] mt-1">{{ $phase->description }}</p>
+                                    <p class="text-sm text-[var(--ui-muted)] mt-2">{{ $phase->description }}</p>
                                 @endif
                             </div>
                             <div class="flex items-center gap-1 flex-shrink-0">
