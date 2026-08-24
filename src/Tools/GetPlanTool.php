@@ -67,6 +67,7 @@ class GetPlanTool implements ToolContract, ToolMetadataContract
                 'title' => $step->title,
                 'details' => $step->details,
                 'lead' => $step->lead,
+                'supporters' => $step->supporters ?? [],
                 'kennzahl' => $step->kennzahl,
                 'deadline' => $step->deadline?->format('Y-m-d'),
                 'status' => $step->status,

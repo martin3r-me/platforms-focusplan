@@ -24,7 +24,7 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
 
     public function getDescription(): string
     {
-        return 'POST /fokusplan/steps - Fügt einem Fokusplan einen Step hinzu. ERFORDERLICH: plan_id, title. Optional: details, lead, kennzahl, deadline, status (open|in_progress|done).';
+        return 'POST /fokusplan/steps - Fügt einem Fokusplan einen Step hinzu. ERFORDERLICH: plan_id, title. Optional: details, lead, supporters, kennzahl, deadline, status (open|in_progress|done).';
     }
 
     public function getSchema(): array
@@ -46,7 +46,12 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 ],
                 'details' => ['type' => 'string', 'description' => 'Optional: Details (Freitext).'],
                 'status_note' => ['type' => 'string', 'description' => 'Optional: Freitext-Status/Notiz (z.B. "Hold 06/26", "60%").'],
-                'lead' => ['type' => 'string', 'description' => 'Optional: Lead, z.B. "BHG.DIGITAL".'],
+                'lead' => ['type' => 'string', 'description' => 'Optional: Verantwortlicher (genau eine Person/Rolle), z.B. "BHG.DIGITAL".'],
+                'supporters' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'description' => 'Optional: Liste der Unterstützer (Personen/Rollen/Externe), z.B. ["NM", "HB"].',
+                ],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
                 'deadline' => ['type' => 'string', 'description' => 'Optional: Deadline als Datum im Format YYYY-MM-DD (z.B. "2026-03-31").'],
                 'status' => [
@@ -103,6 +108,7 @@ class CreateStepTool implements ToolContract, ToolMetadataContract
                 'title' => $title,
                 'details' => $arguments['details'] ?? null,
                 'lead' => $arguments['lead'] ?? null,
+                'supporters' => FokusplanStep::normalizeSupporters($arguments['supporters'] ?? null),
                 'kennzahl' => $arguments['kennzahl'] ?? null,
                 'deadline' => !empty($arguments['deadline']) ? $arguments['deadline'] : null,
                 'status' => $status,
