@@ -23,7 +23,7 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
 
     public function getDescription(): string
     {
-        return 'PATCH /fokusplan/steps/{id} - Aktualisiert einen Step. ERFORDERLICH: step_id. Optional: title, details, lead, kennzahl, deadline, status (open|in_progress|done).';
+        return 'PATCH /fokusplan/steps/{id} - Aktualisiert einen Step. ERFORDERLICH: step_id. Optional: title, details, lead, supporters, kennzahl, deadline, status (open|in_progress|done).';
     }
 
     public function getSchema(): array
@@ -42,7 +42,12 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                 'title' => ['type' => 'string', 'description' => 'Optional: Neuer Titel / Maßnahme.'],
                 'details' => ['type' => 'string', 'description' => 'Optional: Details.'],
                 'status_note' => ['type' => 'string', 'description' => 'Optional: Freitext-Status/Notiz.'],
-                'lead' => ['type' => 'string', 'description' => 'Optional: Lead.'],
+                'lead' => ['type' => 'string', 'description' => 'Optional: Verantwortlicher (genau eine Person/Rolle).'],
+                'supporters' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'description' => 'Optional: Liste der Unterstützer (Personen/Rollen/Externe). Ersetzt die bisherige Liste vollständig.',
+                ],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
                 'deadline' => ['type' => ['string', 'null'], 'description' => 'Optional: Deadline als Datum YYYY-MM-DD. Leerstring/null entfernt die Deadline.'],
                 'status' => [
@@ -79,6 +84,9 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                 if (array_key_exists($field, $arguments)) {
                     $data[$field] = $arguments[$field];
                 }
+            }
+            if (array_key_exists('supporters', $arguments)) {
+                $data['supporters'] = FokusplanStep::normalizeSupporters($arguments['supporters']);
             }
             if (array_key_exists('deadline', $arguments)) {
                 $data['deadline'] = !empty($arguments['deadline']) ? $arguments['deadline'] : null;

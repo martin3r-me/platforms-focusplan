@@ -31,6 +31,7 @@ class FokusplanStep extends Model
         'title',
         'details',
         'lead',
+        'supporters',
         'kennzahl',
         'deadline',
         'status',
@@ -42,6 +43,7 @@ class FokusplanStep extends Model
     protected $casts = [
         'position' => 'integer',
         'deadline' => 'date',
+        'supporters' => 'array',
     ];
 
     protected static function booted(): void
@@ -85,10 +87,45 @@ class FokusplanStep extends Model
         return $query->where('status', $status);
     }
 
+    public function scopeInvolvingPerson($query, string $person)
+    {
+        return $query->where(function ($q) use ($person) {
+            $q->where('lead', $person)->orWhereJsonContains('supporters', $person);
+        });
+    }
+
     // Helpers
 
     public function getStatusLabelAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
+    }
+
+    /**
+     * @param mixed $value
+     * @return array<int, string>
+     */
+    public static function normalizeSupporters(mixed $value): array
+    {
+        return collect(is_array($value) ? $value : [])
+            ->map(fn ($s) => trim((string) $s))
+            ->filter(fn ($s) => $s !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function involvesPerson(string $person): bool
+    {
+        $person = trim($person);
+        if ($person === '') {
+            return false;
+        }
+
+        if ($this->lead !== null && trim($this->lead) === $person) {
+            return true;
+        }
+
+        return in_array($person, $this->supporters ?? [], true);
     }
 }

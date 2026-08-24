@@ -44,6 +44,18 @@
                     </div>
                 </div>
 
+                <div class="w-48 flex-shrink-0">
+                    <x-ui-input-select
+                        name="personFilter"
+                        :options="$personOptions->map(fn($p) => ['value' => $p, 'label' => $p])->values()->all()"
+                        optionValue="value"
+                        optionLabel="label"
+                        wire:model.live="personFilter"
+                        :nullable="true"
+                        nullLabel="– Alle Personen –"
+                    />
+                </div>
+
                 <div class="inline-flex bg-[var(--ui-muted-5)] border border-[var(--ui-border)]/60 rounded-lg p-0.5 gap-0.5 flex-shrink-0">
                     <button type="button" @click="view = 'sektionen'"
                         :class="view === 'sektionen' ? 'bg-[var(--ui-surface)] text-[var(--ui-secondary)] shadow-sm' : 'text-[var(--ui-muted)]'"
@@ -238,10 +250,39 @@
                         optionLabel="label"
                         wire:model="stepStatus"
                     />
-                    <x-ui-input-text wire:model="stepLead" label="Lead" placeholder="z.B. BHG.DIGITAL" />
+                    <x-ui-input-text wire:model="stepLead" label="Verantwortlich" list="fokusplan-people" placeholder="Team-Mitglied oder Rolle, z.B. BHG.DIGITAL" />
                     <x-ui-input-text wire:model="stepKennzahl" label="Kennzahl" />
                     <x-ui-input-text wire:model="stepDeadline" type="date" label="Deadline" />
                 </div>
+
+                <datalist id="fokusplan-people">
+                    @foreach($teamMembers as $teamMember)
+                        <option value="{{ $teamMember }}"></option>
+                    @endforeach
+                </datalist>
+                <div>
+                    <label class="block text-xs font-medium text-[var(--ui-muted)] mb-1.5">Unterstützer</label>
+                    <div class="space-y-2">
+                        @foreach($stepSupporters as $i => $supporter)
+                            <div wire:key="step-supporter-{{ $i }}" class="flex items-center gap-2">
+                                <input type="text" list="fokusplan-people"
+                                       wire:model="stepSupporters.{{ $i }}"
+                                       placeholder="Team-Mitglied oder Rolle, z.B. HR"
+                                       class="w-full text-sm rounded-md border-[var(--ui-border)] focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
+                                <button type="button" wire:click="removeSupporter({{ $i }})"
+                                        class="p-1.5 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
+                                    @svg('heroicon-o-x-mark', 'w-4 h-4')
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" wire:click="addSupporter"
+                            class="mt-2 text-xs font-medium text-[var(--ui-primary)] hover:underline inline-flex items-center gap-1">
+                        @svg('heroicon-o-plus', 'w-3.5 h-3.5')
+                        <span>Unterstützer hinzufügen</span>
+                    </button>
+                </div>
+
                 <x-ui-input-textarea wire:model="stepStatusNote" label="Status-Notiz" rows="2" placeholder="z.B. Hold 06/26, 60% erledigt …" />
             </div>
             <x-slot name="footer">

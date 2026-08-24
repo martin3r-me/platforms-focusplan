@@ -44,6 +44,6 @@
     @endif
 
     <div class="mt-2.5 pt-2.5 border-t border-[var(--ui-border)]/40">
-        @include('fokusplan::livewire.partials.lead-chip', ['lead' => $step->lead])
+        @include('fokusplan::livewire.partials.responsible-chips', ['lead' => $step->lead, 'supporters' => $step->supporters])
     </div>
 </div>

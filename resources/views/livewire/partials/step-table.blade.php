@@ -11,7 +11,7 @@
                 <tr class="bg-[var(--ui-muted-5)]/60 border-b border-[var(--ui-border)]/60">
                     <th class="{{ $th }}">Steps</th>
                     <th class="{{ $th }}">Details</th>
-                    <th class="{{ $th }}">Lead</th>
+                    <th class="{{ $th }}">Verantwortlich / Unterstützer</th>
                     <th class="{{ $th }}">Kennzahl</th>
                     <th class="{{ $th }}">Deadline</th>
                     <th class="{{ $th }}">Status</th>
@@ -35,7 +35,7 @@
                             @endif
                         </td>
                         <td class="{{ $td }}">
-                            @include('fokusplan::livewire.partials.lead-chip', ['lead' => $step->lead])
+                            @include('fokusplan::livewire.partials.responsible-chips', ['lead' => $step->lead, 'supporters' => $step->supporters])
                         </td>
                         <td class="{{ $td }}">
                             <span class="text-sm {{ $step->kennzahl ? 'text-[var(--ui-secondary)]' : 'text-[var(--ui-muted)]' }}">{{ $step->kennzahl ?: '–' }}</span>

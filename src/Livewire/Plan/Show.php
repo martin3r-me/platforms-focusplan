@@ -34,10 +34,15 @@ class Show extends Component
     public string $stepTitle = '';
     public string $stepDetails = '';
     public string $stepLead = '';
+    /** @var array<int, string> */
+    public array $stepSupporters = [];
     public string $stepKennzahl = '';
     public string $stepDeadline = '';
     public string $stepStatus = FokusplanStep::STATUS_OPEN;
     public string $stepStatusNote = '';
+
+    // Filter
+    public ?string $personFilter = null;
 
     public function mount(FokusplanPlan $plan)
     {
@@ -145,6 +150,7 @@ class Show extends Component
         $this->stepTitle = $step->title;
         $this->stepDetails = $step->details ?? '';
         $this->stepLead = $step->lead ?? '';
+        $this->stepSupporters = $step->supporters ?? [];
         $this->stepKennzahl = $step->kennzahl ?? '';
         $this->stepDeadline = $step->deadline?->format('Y-m-d') ?? '';
         $this->stepStatus = $step->status;
@@ -174,6 +180,7 @@ class Show extends Component
             'title' => $title,
             'details' => trim($this->stepDetails) ?: null,
             'lead' => trim($this->stepLead) ?: null,
+            'supporters' => FokusplanStep::normalizeSupporters($this->stepSupporters),
             'kennzahl' => trim($this->stepKennzahl) ?: null,
             'deadline' => trim($this->stepDeadline) ?: null,
             'status' => in_array($this->stepStatus, array_keys(FokusplanStep::STATUSES), true)
@@ -192,6 +199,17 @@ class Show extends Component
 
         $this->showStepModal = false;
         $this->resetStepForm();
+    }
+
+    public function addSupporter()
+    {
+        $this->stepSupporters[] = '';
+    }
+
+    public function removeSupporter(int $index)
+    {
+        unset($this->stepSupporters[$index]);
+        $this->stepSupporters = array_values($this->stepSupporters);
     }
 
     public function setStatus(int $stepId, string $status)
@@ -218,6 +236,7 @@ class Show extends Component
         $this->stepTitle = '';
         $this->stepDetails = '';
         $this->stepLead = '';
+        $this->stepSupporters = [];
         $this->stepKennzahl = '';
         $this->stepDeadline = '';
         $this->stepStatus = FokusplanStep::STATUS_OPEN;
@@ -230,10 +249,29 @@ class Show extends Component
         $looseSteps = $this->plan->steps()->whereNull('fokusplan_phase_id')->orderBy('position')->get();
         $allSteps = $this->plan->steps()->get();
 
+        $teamMembers = $this->plan->team?->users()->pluck('name')->filter()->sort()->values() ?? collect();
+        $personOptions = $allSteps
+            ->flatMap(fn ($step) => array_merge([$step->lead], $step->supporters ?? []))
+            ->filter()
+            ->merge($teamMembers)
+            ->unique()
+            ->sort()
+            ->values();
+
+        $personFilter = trim((string) $this->personFilter);
+        if ($personFilter !== '') {
+            $phases->each(function ($phase) use ($personFilter) {
+                $phase->setRelation('steps', $phase->steps->filter(fn ($step) => $step->involvesPerson($personFilter))->values());
+            });
+            $looseSteps = $looseSteps->filter(fn ($step) => $step->involvesPerson($personFilter))->values();
+        }
+
         return view('fokusplan::livewire.plan.show', [
             'phases' => $phases,
             'looseSteps' => $looseSteps,
             'statuses' => FokusplanStep::STATUSES,
+            'teamMembers' => $teamMembers,
+            'personOptions' => $personOptions,
             'totalSteps' => $allSteps->count(),
             'doneSteps' => $allSteps->where('status', FokusplanStep::STATUS_DONE)->count(),
         ])->layout('platform::layouts.app');
