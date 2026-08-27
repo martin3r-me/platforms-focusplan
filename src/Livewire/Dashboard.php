@@ -45,12 +45,16 @@ class Dashboard extends Component
         $openSteps = FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $team->id))
             ->where('status', '!=', FokusplanStep::STATUS_DONE)
             ->count();
+        $blockedSteps = FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $team->id))
+            ->where('status', FokusplanStep::STATUS_BLOCKED)
+            ->count();
 
         return view('fokusplan::livewire.dashboard', [
             'plans' => $plans,
             'totalPlans' => $totalPlans,
             'totalSteps' => $totalSteps,
             'openSteps' => $openSteps,
+            'blockedSteps' => $blockedSteps,
         ])->layout('platform::layouts.app');
     }
 }
