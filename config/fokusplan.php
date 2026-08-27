@@ -37,6 +37,11 @@ return [
                     'route' => 'fokusplan.plans.index',
                     'icon' => 'heroicon-o-flag',
                 ],
+                'orientation' => [
+                    'title' => 'Strategische Ausrichtung',
+                    'route' => 'fokusplan.orientation.index',
+                    'icon' => 'heroicon-o-compass',
+                ],
                 'dependencies' => [
                     'title' => 'Abhängigkeiten & Ressourcen',
                     'route' => 'fokusplan.dependencies.index',

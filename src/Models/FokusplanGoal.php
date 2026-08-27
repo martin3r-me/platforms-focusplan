@@ -4,6 +4,7 @@ namespace Platform\Fokusplan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\Uid\UuidV7;
@@ -76,9 +77,55 @@ class FokusplanGoal extends Model
         return $this->hasMany(FokusplanStep::class, 'fokusplan_goal_id')->orderBy('position');
     }
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(FokusplanCategory::class, 'fokusplan_goal_category')
+            ->withTimestamps();
+    }
+
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(\Platform\Core\Models\User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Bereich des Ziels für die Ausrichtungsseite (Issue #831): pragmatisch über
+     * das bestehende fachbereich-Freitextfeld des Plans gelöst (analog #828),
+     * solange #825 (Bereich als echte Entität) offen ist.
+     */
+    public function bereichLabel(): string
+    {
+        $plan = $this->plan;
+        if (!$plan) {
+            return '';
+        }
+
+        return trim($plan->fachbereich ?: $plan->title);
+    }
+
+    /**
+     * Potenzial des Ziels, von unten aus den Step-Kennzahlen hochgerechnet
+     * (Issue #831) statt aus dem manuell gepflegten `potential`-Feld des
+     * Steuerungsblocks (#827) — beide Felder bedienen unterschiedliche Zwecke.
+     * Da Einheiten (Euro/Stunden/Prozent) nicht addierbar sind, wird je Einheit
+     * separat summiert.
+     *
+     * @return array<string, float> z.B. ['euro' => 12000.0, 'hours' => 40.0]
+     */
+    public function potentialByUnit(): array
+    {
+        $sums = [];
+
+        foreach ($this->steps as $step) {
+            if ($step->potential_value === null || $step->potential_unit === null) {
+                continue;
+            }
+
+            $unit = $step->potential_unit;
+            $sums[$unit] = ($sums[$unit] ?? 0.0) + (float) $step->potential_value;
+        }
+
+        return $sums;
     }
 
     // Steuerung (Issue #827)
