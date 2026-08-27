@@ -13,11 +13,13 @@ class FokusplanStep extends Model
 
     public const STATUS_OPEN = 'open';
     public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_BLOCKED = 'blocked';
     public const STATUS_DONE = 'done';
 
     public const STATUSES = [
         self::STATUS_OPEN => 'Offen',
         self::STATUS_IN_PROGRESS => 'In Arbeit',
+        self::STATUS_BLOCKED => 'Blockiert',
         self::STATUS_DONE => 'Erledigt',
     ];
 
@@ -27,6 +29,7 @@ class FokusplanStep extends Model
         'uuid',
         'fokusplan_plan_id',
         'fokusplan_phase_id',
+        'fokusplan_goal_id',
         'goal',
         'title',
         'details',
@@ -68,6 +71,11 @@ class FokusplanStep extends Model
     public function phase(): BelongsTo
     {
         return $this->belongsTo(FokusplanPhase::class, 'fokusplan_phase_id');
+    }
+
+    public function goal(): BelongsTo
+    {
+        return $this->belongsTo(FokusplanGoal::class, 'fokusplan_goal_id');
     }
 
     public function createdByUser(): BelongsTo
