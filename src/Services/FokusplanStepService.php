@@ -37,6 +37,33 @@ class FokusplanStepService
     }
 
     /**
+     * Fügt eine "Wartet auf"-Abhängigkeit hinzu (Issue #828).
+     *
+     * @throws \DomainException bei Selbstreferenz oder Zyklus
+     */
+    public function addDependency(FokusplanStep $step, FokusplanStep $dependsOn): void
+    {
+        if ($step->id === $dependsOn->id) {
+            throw new \DomainException('Eine Maßnahme kann nicht von sich selbst abhängen.');
+        }
+
+        if ($step->dependsOn()->where('depends_on_step_id', $dependsOn->id)->exists()) {
+            return;
+        }
+
+        if ($dependsOn->dependsTransitivelyOn($step)) {
+            throw new \DomainException('Diese Abhängigkeit würde einen Zyklus erzeugen.');
+        }
+
+        $step->dependsOn()->attach($dependsOn->id);
+    }
+
+    public function removeDependency(FokusplanStep $step, FokusplanStep $dependsOn): void
+    {
+        $step->dependsOn()->detach($dependsOn->id);
+    }
+
+    /**
      * Reihenfolge der Steps neu setzen.
      *
      * @param array<int> $stepIds Step-IDs in gewünschter Reihenfolge

@@ -37,6 +37,11 @@ return [
                     'route' => 'fokusplan.plans.index',
                     'icon' => 'heroicon-o-flag',
                 ],
+                'dependencies' => [
+                    'title' => 'Abhängigkeiten & Ressourcen',
+                    'route' => 'fokusplan.dependencies.index',
+                    'icon' => 'heroicon-o-link',
+                ],
             ],
         ],
     ],
