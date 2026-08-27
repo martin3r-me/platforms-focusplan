@@ -274,6 +274,7 @@ class Show extends Component
             'personOptions' => $personOptions,
             'totalSteps' => $allSteps->count(),
             'doneSteps' => $allSteps->where('status', FokusplanStep::STATUS_DONE)->count(),
+            'blockedSteps' => $allSteps->where('status', FokusplanStep::STATUS_BLOCKED)->count(),
         ])->layout('platform::layouts.app');
     }
 }

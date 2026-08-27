@@ -4,11 +4,13 @@
     $pill = match ($step->status) {
         'done' => 'bg-[var(--ui-success)]/12 text-[var(--ui-success)]',
         'in_progress' => 'bg-[var(--ui-warning)]/15 text-[var(--ui-warning)]',
+        'blocked' => 'bg-[var(--ui-danger)]/12 text-[var(--ui-danger)]',
         default => 'bg-[var(--ui-muted-5)] text-[var(--ui-secondary)]',
     };
     $dot = match ($step->status) {
         'done' => 'bg-[var(--ui-success)]',
         'in_progress' => 'bg-[var(--ui-warning)]',
+        'blocked' => 'bg-[var(--ui-danger)]',
         default => 'bg-[var(--ui-muted)]',
     };
 @endphp

@@ -3,6 +3,7 @@
         'group rounded-xl bg-[var(--ui-surface)] border border-[var(--ui-border)]/70 p-3.5 shadow-sm border-l-[3px] transition-shadow hover:shadow-md',
         'border-l-[var(--ui-success)]' => $step->status === 'done',
         'border-l-[var(--ui-warning)]' => $step->status === 'in_progress',
+        'border-l-[var(--ui-danger)]' => $step->status === 'blocked',
         'border-l-[var(--ui-muted)]' => $step->status === 'open',
     ])>
     <div class="flex items-start justify-between gap-2">

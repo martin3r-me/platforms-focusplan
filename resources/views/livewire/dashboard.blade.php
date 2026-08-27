@@ -22,10 +22,11 @@
     <x-ui-page-container>
         <div class="space-y-8">
             {{-- Stats --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <x-ui-dashboard-tile title="Fokuspläne" :count="$totalPlans" subtitle="Gesamt" icon="flag" variant="secondary" size="lg" />
                 <x-ui-dashboard-tile title="Steps" :count="$totalSteps" subtitle="Gesamt" icon="list-bullet" variant="secondary" size="lg" />
                 <x-ui-dashboard-tile title="Offen" :count="$openSteps" subtitle="Noch nicht erledigt" icon="clock" variant="warning" size="lg" />
+                <x-ui-dashboard-tile title="Blockiert" :count="$blockedSteps" subtitle="Brauchen eine Entscheidung" icon="exclamation-triangle" variant="danger" size="lg" />
             </div>
 
             {{-- Pläne --}}

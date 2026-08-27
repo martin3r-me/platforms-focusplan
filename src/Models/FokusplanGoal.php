@@ -104,11 +104,14 @@ class FokusplanGoal extends Model
     /**
      * Status-Ampel, abgeleitet aus den Maßnahmen und deren Terminen (nicht manuell gepflegt).
      *
-     * Regel (siehe Issue #827, Prototyp-Funktion `zielStatus`):
+     * Regel (siehe Issue #827, Prototyp-Funktion `zielStatus`; blockiert-Fall aus #830):
      * 1. alle Maßnahmen erledigt -> Grün "Erledigt"
-     * 2. sonst Termin überschritten -> Rot "Kritisch"
+     * 2. sonst Termin überschritten ODER mindestens eine Maßnahme blockiert -> Rot "Kritisch"
      * 3. sonst mindestens eine Maßnahme läuft -> Gelb "In Arbeit"
      * 4. sonst neutral "In Arbeit"
+     *
+     * Eine blockierte Maßnahme braucht eine Entscheidung (siehe #830) und darf das Ziel
+     * daher nie unter "In Arbeit" verstecken — sie zählt wie eine überschrittene Deadline.
      *
      * @return array{key: string, label: string}
      */
@@ -131,7 +134,9 @@ class FokusplanGoal extends Model
                 && $step->deadline->startOfDay()->lt($today);
         });
 
-        if ($isOverdue) {
+        $hasBlocked = $steps->contains(fn (FokusplanStep $step) => $step->status === FokusplanStep::STATUS_BLOCKED);
+
+        if ($isOverdue || $hasBlocked) {
             return ['key' => self::AMPEL_CRITICAL, 'label' => self::AMPEL_LABELS[self::AMPEL_CRITICAL]];
         }
 

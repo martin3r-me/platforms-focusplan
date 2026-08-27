@@ -44,6 +44,15 @@
                     </div>
                 </div>
 
+                @if($blockedSteps > 0)
+                    <x-ui-badge variant="danger" size="sm">
+                        <span class="flex items-center gap-1">
+                            @svg('heroicon-o-exclamation-triangle', 'w-3.5 h-3.5')
+                            <span>{{ $blockedSteps }} blockiert</span>
+                        </span>
+                    </x-ui-badge>
+                @endif
+
                 <div class="w-48 flex-shrink-0">
                     <x-ui-input-select
                         name="personFilter"
