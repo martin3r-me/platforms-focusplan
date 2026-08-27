@@ -23,7 +23,7 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
 
     public function getDescription(): string
     {
-        return 'PATCH /fokusplan/steps/{id} - Aktualisiert einen Step. ERFORDERLICH: step_id. Optional: title, details, lead, supporters, kennzahl, deadline, status (open|in_progress|done).';
+        return 'PATCH /fokusplan/steps/{id} - Aktualisiert einen Step. ERFORDERLICH: step_id. Optional: title, details, lead, supporters, resources, external_project_ref, kennzahl, deadline, status (open|in_progress|done).';
     }
 
     public function getSchema(): array
@@ -48,6 +48,12 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
                     'items' => ['type' => 'string'],
                     'description' => 'Optional: Liste der Unterstützer (Personen/Rollen/Externe). Ersetzt die bisherige Liste vollständig.',
                 ],
+                'resources' => [
+                    'type' => 'array',
+                    'items' => ['type' => 'string'],
+                    'description' => 'Optional: Benötigte Ressourcen (Budget, Freigabe, Toolzugang, Zeit, ...). Ersetzt die bisherige Liste vollständig.',
+                ],
+                'external_project_ref' => ['type' => ['string', 'null'], 'description' => 'Optional: Verweis auf ein externes Projekt außerhalb des Fokusplans. Leerstring/null entfernt die Referenz.'],
                 'kennzahl' => ['type' => 'string', 'description' => 'Optional: Kennzahl.'],
                 'deadline' => ['type' => ['string', 'null'], 'description' => 'Optional: Deadline als Datum YYYY-MM-DD. Leerstring/null entfernt die Deadline.'],
                 'status' => [
@@ -87,6 +93,12 @@ class UpdateStepTool implements ToolContract, ToolMetadataContract
             }
             if (array_key_exists('supporters', $arguments)) {
                 $data['supporters'] = FokusplanStep::normalizeSupporters($arguments['supporters']);
+            }
+            if (array_key_exists('resources', $arguments)) {
+                $data['resources'] = FokusplanStep::normalizeResources($arguments['resources']);
+            }
+            if (array_key_exists('external_project_ref', $arguments)) {
+                $data['external_project_ref'] = !empty($arguments['external_project_ref']) ? trim((string) $arguments['external_project_ref']) : null;
             }
             if (array_key_exists('deadline', $arguments)) {
                 $data['deadline'] = !empty($arguments['deadline']) ? $arguments['deadline'] : null;

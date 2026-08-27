@@ -20,6 +20,10 @@
             @svg('heroicon-o-flag', 'w-4 h-4 text-[var(--ui-secondary)]')
             <span class="ml-2 text-sm">Alle Fokuspläne</span>
         </x-ui-sidebar-item>
+        <x-ui-sidebar-item :href="route('fokusplan.dependencies.index')">
+            @svg('heroicon-o-link', 'w-4 h-4 text-[var(--ui-secondary)]')
+            <span class="ml-2 text-sm">Abhängigkeiten & Ressourcen</span>
+        </x-ui-sidebar-item>
         <x-ui-sidebar-item :href="route('fokusplan.dashboard')" type="button" wire:click="createPlan">
             @svg('heroicon-o-plus', 'w-4 h-4 text-[var(--ui-secondary)]')
             <span class="ml-2 text-sm">Neuer Fokusplan</span>
@@ -49,6 +53,9 @@
             </a>
             <a href="{{ route('fokusplan.plans.index') }}" wire:navigate class="flex items-center justify-center p-2 rounded-md text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)]">
                 @svg('heroicon-o-flag', 'w-5 h-5')
+            </a>
+            <a href="{{ route('fokusplan.dependencies.index') }}" wire:navigate class="flex items-center justify-center p-2 rounded-md text-[var(--ui-secondary)] hover:bg-[var(--ui-muted-5)]">
+                @svg('heroicon-o-link', 'w-5 h-5')
             </a>
         </div>
     </div>

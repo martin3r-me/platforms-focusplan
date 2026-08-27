@@ -293,6 +293,65 @@
                 </div>
 
                 <x-ui-input-textarea wire:model="stepStatusNote" label="Status-Notiz" rows="2" placeholder="z.B. Hold 06/26, 60% erledigt …" />
+
+                <div>
+                    <label class="block text-xs font-medium text-[var(--ui-muted)] mb-1.5">Benötigte Ressourcen</label>
+                    <div class="space-y-2">
+                        @foreach($stepResources as $i => $resource)
+                            <div wire:key="step-resource-{{ $i }}" class="flex items-center gap-2">
+                                <input type="text"
+                                       wire:model="stepResources.{{ $i }}"
+                                       placeholder="z.B. Budget, Freigabe, Toolzugang, Zeit"
+                                       class="w-full text-sm rounded-md border-[var(--ui-border)] focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
+                                <button type="button" wire:click="removeResource({{ $i }})"
+                                        class="p-1.5 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
+                                    @svg('heroicon-o-x-mark', 'w-4 h-4')
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" wire:click="addResource"
+                            class="mt-2 text-xs font-medium text-[var(--ui-primary)] hover:underline inline-flex items-center gap-1">
+                        @svg('heroicon-o-plus', 'w-3.5 h-3.5')
+                        <span>Ressource hinzufügen</span>
+                    </button>
+                </div>
+
+                <x-ui-input-text wire:model="stepExternalProjectRef" label="Externes Projekt" placeholder="z.B. IT-Projekt Mailadressen-Rollout" />
+
+                @if($editingStepId)
+                    <div>
+                        <label class="block text-xs font-medium text-[var(--ui-muted)] mb-1.5">Wartet auf</label>
+                        <div class="space-y-1.5">
+                            @forelse($currentDependencies as $dependency)
+                                <div wire:key="step-dependency-{{ $dependency->id }}" class="flex items-center justify-between gap-2 text-sm bg-[var(--ui-muted-5)] rounded-md px-2.5 py-1.5">
+                                    <span class="truncate">{{ $dependency->plan->fachbereich ?: $dependency->plan->title }} · {{ $dependency->title }}</span>
+                                    <button type="button" wire:click="removeStepDependency({{ $dependency->id }})"
+                                            class="p-1 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
+                                        @svg('heroicon-o-x-mark', 'w-3.5 h-3.5')
+                                    </button>
+                                </div>
+                            @empty
+                                <p class="text-xs text-[var(--ui-muted)]">Keine Abhängigkeiten.</p>
+                            @endforelse
+                        </div>
+                        <div class="mt-2 flex items-center gap-2">
+                            <x-ui-input-select
+                                name="stepNewDependencyId"
+                                :options="$dependencyOptions->all()"
+                                optionValue="id"
+                                optionLabel="label"
+                                wire:model="stepNewDependencyId"
+                                :nullable="true"
+                                nullLabel="– Maßnahme wählen –"
+                            />
+                            <x-ui-button variant="secondary-outline" wire:click="addStepDependency">Hinzufügen</x-ui-button>
+                        </div>
+                        @error('stepNewDependencyId')
+                            <p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
             </div>
             <x-slot name="footer">
                 <x-ui-button variant="secondary-outline" wire:click="$set('showStepModal', false)">Abbrechen</x-ui-button>

@@ -36,6 +36,10 @@ class Show extends Component
     public string $stepLead = '';
     /** @var array<int, string> */
     public array $stepSupporters = [];
+    /** @var array<int, string> */
+    public array $stepResources = [];
+    public string $stepExternalProjectRef = '';
+    public ?int $stepNewDependencyId = null;
     public string $stepKennzahl = '';
     public string $stepDeadline = '';
     public string $stepStatus = FokusplanStep::STATUS_OPEN;
@@ -151,6 +155,8 @@ class Show extends Component
         $this->stepDetails = $step->details ?? '';
         $this->stepLead = $step->lead ?? '';
         $this->stepSupporters = $step->supporters ?? [];
+        $this->stepResources = $step->resources ?? [];
+        $this->stepExternalProjectRef = $step->external_project_ref ?? '';
         $this->stepKennzahl = $step->kennzahl ?? '';
         $this->stepDeadline = $step->deadline?->format('Y-m-d') ?? '';
         $this->stepStatus = $step->status;
@@ -181,6 +187,8 @@ class Show extends Component
             'details' => trim($this->stepDetails) ?: null,
             'lead' => trim($this->stepLead) ?: null,
             'supporters' => FokusplanStep::normalizeSupporters($this->stepSupporters),
+            'resources' => FokusplanStep::normalizeResources($this->stepResources),
+            'external_project_ref' => trim($this->stepExternalProjectRef) ?: null,
             'kennzahl' => trim($this->stepKennzahl) ?: null,
             'deadline' => trim($this->stepDeadline) ?: null,
             'status' => in_array($this->stepStatus, array_keys(FokusplanStep::STATUSES), true)
@@ -212,6 +220,52 @@ class Show extends Component
         $this->stepSupporters = array_values($this->stepSupporters);
     }
 
+    public function addResource()
+    {
+        $this->stepResources[] = '';
+    }
+
+    public function removeResource(int $index)
+    {
+        unset($this->stepResources[$index]);
+        $this->stepResources = array_values($this->stepResources);
+    }
+
+    public function addStepDependency()
+    {
+        $this->resetErrorBag('stepNewDependencyId');
+
+        if (!$this->editingStepId || !$this->stepNewDependencyId) {
+            return;
+        }
+
+        $step = $this->plan->steps()->findOrFail($this->editingStepId);
+        $dependsOn = FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $this->plan->team_id))
+            ->findOrFail($this->stepNewDependencyId);
+
+        try {
+            (new FokusplanStepService())->addDependency($step, $dependsOn);
+            $this->stepNewDependencyId = null;
+        } catch (\DomainException $e) {
+            $this->addError('stepNewDependencyId', $e->getMessage());
+        }
+    }
+
+    public function removeStepDependency(int $dependsOnStepId)
+    {
+        if (!$this->editingStepId) {
+            return;
+        }
+
+        $step = $this->plan->steps()->findOrFail($this->editingStepId);
+        $dependsOn = FokusplanStep::find($dependsOnStepId);
+        if (!$dependsOn) {
+            return;
+        }
+
+        (new FokusplanStepService())->removeDependency($step, $dependsOn);
+    }
+
     public function setStatus(int $stepId, string $status)
     {
         if (!in_array($status, array_keys(FokusplanStep::STATUSES), true)) {
@@ -237,6 +291,9 @@ class Show extends Component
         $this->stepDetails = '';
         $this->stepLead = '';
         $this->stepSupporters = [];
+        $this->stepResources = [];
+        $this->stepExternalProjectRef = '';
+        $this->stepNewDependencyId = null;
         $this->stepKennzahl = '';
         $this->stepDeadline = '';
         $this->stepStatus = FokusplanStep::STATUS_OPEN;
@@ -266,6 +323,27 @@ class Show extends Component
             $looseSteps = $looseSteps->filter(fn ($step) => $step->involvesPerson($personFilter))->values();
         }
 
+        $currentDependencies = collect();
+        $dependencyOptions = collect();
+        if ($this->editingStepId) {
+            $editingStep = FokusplanStep::find($this->editingStepId);
+            if ($editingStep) {
+                $currentDependencies = $editingStep->dependsOn()->with('plan')->get();
+                $excludeIds = $currentDependencies->pluck('id')->push($editingStep->id);
+
+                $dependencyOptions = FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $this->plan->team_id))
+                    ->whereNotIn('id', $excludeIds)
+                    ->with('plan')
+                    ->get()
+                    ->map(fn (FokusplanStep $s) => [
+                        'id' => $s->id,
+                        'label' => trim(($s->plan->fachbereich ?: $s->plan->title) . ' · ' . $s->title),
+                    ])
+                    ->sortBy('label')
+                    ->values();
+            }
+        }
+
         return view('fokusplan::livewire.plan.show', [
             'phases' => $phases,
             'looseSteps' => $looseSteps,
@@ -275,6 +353,8 @@ class Show extends Component
             'totalSteps' => $allSteps->count(),
             'doneSteps' => $allSteps->where('status', FokusplanStep::STATUS_DONE)->count(),
             'blockedSteps' => $allSteps->where('status', FokusplanStep::STATUS_BLOCKED)->count(),
+            'currentDependencies' => $currentDependencies,
+            'dependencyOptions' => $dependencyOptions,
         ])->layout('platform::layouts.app');
     }
 }
