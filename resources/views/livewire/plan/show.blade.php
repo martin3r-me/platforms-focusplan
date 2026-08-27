@@ -108,6 +108,9 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-1 flex-shrink-0">
+                                <x-ui-button variant="secondary-outline" size="xs" wire:click="addGoal({{ $phase->id }})">
+                                    <span class="flex items-center gap-1">@svg('heroicon-o-flag', 'w-3.5 h-3.5')<span>Ziel</span></span>
+                                </x-ui-button>
                                 <x-ui-button variant="secondary-outline" size="xs" wire:click="addStep({{ $phase->id }})">
                                     <span class="flex items-center gap-1">@svg('heroicon-o-plus', 'w-3.5 h-3.5')<span>Step</span></span>
                                 </x-ui-button>
@@ -121,6 +124,24 @@
                                 </x-ui-button>
                             </div>
                         </div>
+
+                        @if($phase->goals->isNotEmpty())
+                            @php
+                                $ampelVariant = ['done' => 'success', 'critical' => 'danger', 'warning' => 'warning', 'neutral' => 'secondary'];
+                            @endphp
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                @foreach($phase->goals as $goal)
+                                    @php $ampel = $goal->statusAmpel(); $progress = $goal->progress(); @endphp
+                                    <button type="button" wire:click="editGoal({{ $goal->id }})"
+                                        class="inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 rounded-lg border border-[var(--ui-border)]/60 bg-[var(--ui-muted-5)]/40 hover:bg-[var(--ui-muted-5)] transition-colors text-left">
+                                        @svg('heroicon-o-flag', 'w-3.5 h-3.5 text-[var(--ui-primary)] flex-shrink-0')
+                                        <span class="text-xs font-medium text-[var(--ui-secondary)] max-w-[12rem] truncate">{{ $goal->title }}</span>
+                                        <span class="text-[11px] text-[var(--ui-muted)] tabular-nums">{{ $progress['done'] }}/{{ $progress['total'] }}</span>
+                                        <x-ui-badge :variant="$ampelVariant[$ampel['key']]" size="sm">{{ $ampel['label'] }}</x-ui-badge>
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
 
                         @include('fokusplan::livewire.partials.step-table', ['steps' => $phase->steps, 'statuses' => $statuses, 'phaseId' => $phase->id])
                     </x-ui-panel>
@@ -237,7 +258,17 @@
     @if($showStepModal)
         <x-ui-modal wire:model="showStepModal" :title="$editingStepId ? 'Step bearbeiten' : 'Neuer Step'">
             <div class="space-y-4">
-                <x-ui-input-text wire:model="stepGoal" label="Übergeordnetes Ziel" placeholder="optional" />
+                <x-ui-input-select
+                    name="stepGoalId"
+                    label="Ziel"
+                    :options="$allGoals->map(fn($g) => ['value' => $g->id, 'label' => $g->phase->title . ' – ' . $g->title])->values()->all()"
+                    optionValue="value"
+                    optionLabel="label"
+                    wire:model="stepGoalId"
+                    :nullable="true"
+                    nullLabel="– Kein Ziel verknüpft –"
+                />
+                <x-ui-input-text wire:model="stepGoal" label="Übergeordnetes Ziel (Freitext)" placeholder="optional, falls (noch) kein Ziel oben ausgewählt ist" />
                 <x-ui-input-text wire:model="stepTitle" label="Steps / Maßnahme" required />
                 <x-ui-input-textarea wire:model="stepDetails" label="Details" rows="3" placeholder="Ein Punkt pro Zeile …" />
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -293,10 +324,130 @@
                 </div>
 
                 <x-ui-input-textarea wire:model="stepStatusNote" label="Status-Notiz" rows="2" placeholder="z.B. Hold 06/26, 60% erledigt …" />
+
+                <div>
+                    <label class="block text-xs font-medium text-[var(--ui-muted)] mb-1.5">Benötigte Ressourcen</label>
+                    <div class="space-y-2">
+                        @foreach($stepResources as $i => $resource)
+                            <div wire:key="step-resource-{{ $i }}" class="flex items-center gap-2">
+                                <input type="text"
+                                       wire:model="stepResources.{{ $i }}"
+                                       placeholder="z.B. Budget, Freigabe, Toolzugang, Zeit"
+                                       class="w-full text-sm rounded-md border-[var(--ui-border)] focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50" />
+                                <button type="button" wire:click="removeResource({{ $i }})"
+                                        class="p-1.5 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
+                                    @svg('heroicon-o-x-mark', 'w-4 h-4')
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" wire:click="addResource"
+                            class="mt-2 text-xs font-medium text-[var(--ui-primary)] hover:underline inline-flex items-center gap-1">
+                        @svg('heroicon-o-plus', 'w-3.5 h-3.5')
+                        <span>Ressource hinzufügen</span>
+                    </button>
+                </div>
+
+                <x-ui-input-text wire:model="stepExternalProjectRef" label="Externes Projekt" placeholder="z.B. IT-Projekt Mailadressen-Rollout" />
+
+                @if($editingStepId)
+                    <div>
+                        <label class="block text-xs font-medium text-[var(--ui-muted)] mb-1.5">Wartet auf</label>
+                        <div class="space-y-1.5">
+                            @forelse($currentDependencies as $dependency)
+                                <div wire:key="step-dependency-{{ $dependency->id }}" class="flex items-center justify-between gap-2 text-sm bg-[var(--ui-muted-5)] rounded-md px-2.5 py-1.5">
+                                    <span class="truncate">{{ $dependency->plan->fachbereich ?: $dependency->plan->title }} · {{ $dependency->title }}</span>
+                                    <button type="button" wire:click="removeStepDependency({{ $dependency->id }})"
+                                            class="p-1 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
+                                        @svg('heroicon-o-x-mark', 'w-3.5 h-3.5')
+                                    </button>
+                                </div>
+                            @empty
+                                <p class="text-xs text-[var(--ui-muted)]">Keine Abhängigkeiten.</p>
+                            @endforelse
+                        </div>
+                        <div class="mt-2 flex items-center gap-2">
+                            <x-ui-input-select
+                                name="stepNewDependencyId"
+                                :options="$dependencyOptions->all()"
+                                optionValue="id"
+                                optionLabel="label"
+                                wire:model="stepNewDependencyId"
+                                :nullable="true"
+                                nullLabel="– Maßnahme wählen –"
+                            />
+                            <x-ui-button variant="secondary-outline" wire:click="addStepDependency">Hinzufügen</x-ui-button>
+                        </div>
+                        @error('stepNewDependencyId')
+                            <p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
             </div>
             <x-slot name="footer">
                 <x-ui-button variant="secondary-outline" wire:click="$set('showStepModal', false)">Abbrechen</x-ui-button>
                 <x-ui-button variant="primary" wire:click="saveStep">Speichern</x-ui-button>
+            </x-slot>
+        </x-ui-modal>
+    @endif
+
+    {{-- Ziel-Modal: Steuerungsblock (Issue #827) --}}
+    @if($showGoalModal)
+        @php
+            $editingGoal = $editingGoalId ? $allGoals->firstWhere('id', $editingGoalId) : null;
+            $ampelVariant = ['done' => 'success', 'critical' => 'danger', 'warning' => 'warning', 'neutral' => 'secondary'];
+        @endphp
+        <x-ui-modal wire:model="showGoalModal" :title="$editingGoalId ? 'Ziel bearbeiten' : 'Neues Ziel'">
+            <div class="space-y-4">
+                <x-ui-input-text wire:model="goalTitle" label="Titel" required />
+                <x-ui-input-textarea wire:model="goalDescription" label="Beschreibung" rows="2" />
+
+                {{-- Steuerung: zweispaltiges Kachel-Grid --}}
+                <div>
+                    <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-2">Steuerung</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        @if($editingGoal)
+                            @php $ampel = $editingGoal->statusAmpel(); $progress = $editingGoal->progress(); @endphp
+                            <div class="p-3 rounded-lg border border-[var(--ui-border)]/60 bg-[var(--ui-muted-5)]/40">
+                                <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1.5">Status</div>
+                                <x-ui-badge :variant="$ampelVariant[$ampel['key']]" size="sm">{{ $ampel['label'] }}</x-ui-badge>
+                            </div>
+                            <div class="p-3 rounded-lg border border-[var(--ui-border)]/60 bg-[var(--ui-muted-5)]/40">
+                                <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1.5">Fortschritt</div>
+                                <div class="text-sm font-semibold text-[var(--ui-secondary)] tabular-nums">{{ $progress['percent'] }}% <span class="text-xs font-normal text-[var(--ui-muted)]">({{ $progress['done'] }}/{{ $progress['total'] }} Maßnahmen)</span></div>
+                            </div>
+                        @endif
+
+                        <div class="p-3 rounded-lg border border-[var(--ui-border)]/60">
+                            <x-ui-input-text wire:model="goalResponsible" label="Verantwortlich" />
+                        </div>
+                        <div class="p-3 rounded-lg border border-[var(--ui-border)]/60">
+                            <x-ui-input-text wire:model="goalKpi" label="KPI / Erfolgskriterium" />
+                        </div>
+                        <div class="p-3 rounded-lg border border-[var(--ui-border)]/60">
+                            <x-ui-input-text wire:model="goalPotential" label="Potenzial (€)" placeholder="z.B. 50000" />
+                        </div>
+                        <div class="p-3 rounded-lg border border-[var(--ui-border)]/60">
+                            <x-ui-input-text wire:model="goalImpact" label="Wirkung" placeholder="z.B. DB II, HK I, Umsatz, Kunde" />
+                        </div>
+
+                        {{-- Risiko/Blocker: volle Breite, Bernstein --}}
+                        <div class="col-span-2 p-3 rounded-lg border border-[var(--ui-warning)]/40 bg-[var(--ui-warning)]/10">
+                            <x-ui-input-textarea wire:model="goalRiskNote" label="Risiko / Blocker" rows="2" />
+                        </div>
+
+                        <div class="col-span-2 p-3 rounded-lg border border-[var(--ui-border)]/60">
+                            <x-ui-input-textarea wire:model="goalDiagnosis" label="Diagnose" rows="2" placeholder="Warum steht die Ampel so?" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <x-slot name="footer">
+                @if($editingGoalId)
+                    <x-ui-button variant="danger-outline" wire:click="deleteGoal({{ $editingGoalId }})" wire:confirm="Dieses Ziel wirklich löschen? Verknüpfte Steps verlieren die Zuordnung.">Löschen</x-ui-button>
+                @endif
+                <x-ui-button variant="secondary-outline" wire:click="$set('showGoalModal', false)">Abbrechen</x-ui-button>
+                <x-ui-button variant="primary" wire:click="saveGoal">Speichern</x-ui-button>
             </x-slot>
         </x-ui-modal>
     @endif

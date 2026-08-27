@@ -4,6 +4,7 @@ namespace Platform\Fokusplan\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Symfony\Component\Uid\UuidV7;
 
@@ -45,6 +46,8 @@ class FokusplanStep extends Model
         'details',
         'lead',
         'supporters',
+        'resources',
+        'external_project_ref',
         'kennzahl',
         'potential_value',
         'potential_unit',
@@ -60,6 +63,7 @@ class FokusplanStep extends Model
         'deadline' => 'date',
         'potential_value' => 'decimal:2',
         'supporters' => 'array',
+        'resources' => 'array',
     ];
 
     protected static function booted(): void
@@ -94,6 +98,32 @@ class FokusplanStep extends Model
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(\Platform\Core\Models\User::class, 'created_by_user_id');
+    }
+
+    /**
+     * Vorgelagerte Maßnahmen, auf die dieser Step wartet ("Wartet auf").
+     */
+    public function dependsOn(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            self::class,
+            'fokusplan_step_dependencies',
+            'fokusplan_step_id',
+            'depends_on_step_id'
+        )->withTimestamps();
+    }
+
+    /**
+     * Nachgelagerte Maßnahmen, die auf diesen Step warten.
+     */
+    public function dependents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            self::class,
+            'fokusplan_step_dependencies',
+            'depends_on_step_id',
+            'fokusplan_step_id'
+        )->withTimestamps();
     }
 
     // Scopes
@@ -148,5 +178,64 @@ class FokusplanStep extends Model
         }
 
         return in_array($person, $this->supporters ?? [], true);
+    }
+
+    /**
+     * @param mixed $value
+     * @return array<int, string>
+     */
+    public static function normalizeResources(mixed $value): array
+    {
+        return collect(is_array($value) ? $value : [])
+            ->map(fn ($r) => trim((string) $r))
+            ->filter(fn ($r) => $r !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Abhängigkeit intern vs. Koordination (Issue #828): liegt die vorgelagerte
+     * Maßnahme im selben Ziel, ist sie intern, sonst Koordination.
+     */
+    public function isCoordinationDependency(self $dependsOn): bool
+    {
+        if ($this->fokusplan_goal_id === null || $dependsOn->fokusplan_goal_id === null) {
+            return $this->fokusplan_plan_id !== $dependsOn->fokusplan_plan_id;
+        }
+
+        return $this->fokusplan_goal_id !== $dependsOn->fokusplan_goal_id;
+    }
+
+    /**
+     * Prüft, ob dieser Step (transitiv, inkl. bestehender Abhängigkeiten) von
+     * $step abhängt — also ob eine neue Abhängigkeit $step -> $this einen Zyklus
+     * erzeugen würde (Issue #828).
+     */
+    public function dependsTransitivelyOn(self $step): bool
+    {
+        $visited = [];
+        $queue = [$this->id];
+
+        while ($queue !== []) {
+            $currentId = array_shift($queue);
+            if (isset($visited[$currentId])) {
+                continue;
+            }
+            $visited[$currentId] = true;
+
+            if ($currentId === $step->id) {
+                return true;
+            }
+
+            $nextIds = self::find($currentId)?->dependsOn()->pluck('fokusplan_steps.id')->all() ?? [];
+            foreach ($nextIds as $nextId) {
+                if (!isset($visited[$nextId])) {
+                    $queue[] = $nextId;
+                }
+            }
+        }
+
+        return false;
     }
 }

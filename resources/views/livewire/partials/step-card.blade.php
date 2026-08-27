@@ -1,5 +1,5 @@
 {{-- Step-Karte für die Board-Ansicht. Erwartet: $step, $statuses --}}
-<div @class([
+<div id="fokusplan-step-{{ $step->id }}" @class([
         'group rounded-xl bg-[var(--ui-surface)] border border-[var(--ui-border)]/70 p-3.5 shadow-sm border-l-[3px] transition-shadow hover:shadow-md',
         'border-l-[var(--ui-success)]' => $step->status === 'done',
         'border-l-[var(--ui-warning)]' => $step->status === 'in_progress',

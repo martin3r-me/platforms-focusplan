@@ -85,6 +85,8 @@ class FokusplanServiceProvider extends ServiceProvider
             $registry->register(new \Platform\Fokusplan\Tools\UpdateStepTool());
             $registry->register(new \Platform\Fokusplan\Tools\DeleteStepTool());
             $registry->register(new \Platform\Fokusplan\Tools\ReorderStepsTool());
+            $registry->register(new \Platform\Fokusplan\Tools\AddStepDependencyTool());
+            $registry->register(new \Platform\Fokusplan\Tools\RemoveStepDependencyTool());
         } catch (\Throwable $e) {
             \Log::warning('Fokusplan: Tool-Registrierung fehlgeschlagen', ['error' => $e->getMessage()]);
         }
