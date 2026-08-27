@@ -23,6 +23,16 @@ class FokusplanStep extends Model
         self::STATUS_DONE => 'Erledigt',
     ];
 
+    public const UNIT_EURO = 'euro';
+    public const UNIT_HOURS = 'hours';
+    public const UNIT_PERCENT = 'percent';
+
+    public const UNITS = [
+        self::UNIT_EURO => '€',
+        self::UNIT_HOURS => 'Std.',
+        self::UNIT_PERCENT => '% Effizienz',
+    ];
+
     protected $table = 'fokusplan_steps';
 
     protected $fillable = [
@@ -36,6 +46,8 @@ class FokusplanStep extends Model
         'lead',
         'supporters',
         'kennzahl',
+        'potential_value',
+        'potential_unit',
         'deadline',
         'status',
         'status_note',
@@ -46,6 +58,7 @@ class FokusplanStep extends Model
     protected $casts = [
         'position' => 'integer',
         'deadline' => 'date',
+        'potential_value' => 'decimal:2',
         'supporters' => 'array',
     ];
 
