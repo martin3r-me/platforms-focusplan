@@ -65,6 +65,11 @@ class FokusplanPlan extends Model
         return $this->hasMany(FokusplanStep::class, 'fokusplan_plan_id')->orderBy('position');
     }
 
+    public function goals(): HasMany
+    {
+        return $this->hasMany(FokusplanGoal::class, 'fokusplan_plan_id')->orderBy('position');
+    }
+
     // Scopes
 
     public function scopeForTeam($query, int $teamId)
