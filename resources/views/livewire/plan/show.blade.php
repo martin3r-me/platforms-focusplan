@@ -137,6 +137,7 @@
                                         @svg('heroicon-o-flag', 'w-3.5 h-3.5 text-[var(--ui-primary)] flex-shrink-0')
                                         <span class="text-xs font-medium text-[var(--ui-secondary)] max-w-[12rem] truncate">{{ $goal->title }}</span>
                                         <span class="text-[11px] text-[var(--ui-muted)] tabular-nums">{{ $progress['done'] }}/{{ $progress['total'] }}</span>
+                                        @include('fokusplan::livewire.partials.smart-points', ['goal' => $goal])
                                         <x-ui-badge :variant="$ampelVariant[$ampel['key']]" size="sm">{{ $ampel['label'] }}</x-ui-badge>
                                     </button>
                                 @endforeach
@@ -439,6 +440,23 @@
                         <div class="col-span-2 p-3 rounded-lg border border-[var(--ui-border)]/60">
                             <x-ui-input-textarea wire:model="goalDiagnosis" label="Diagnose" rows="2" placeholder="Warum steht die Ampel so?" />
                         </div>
+                    </div>
+                </div>
+
+                {{-- SMART-Ziel (Issue #826) --}}
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)]">SMART</h4>
+                        @if($editingGoal)
+                            @include('fokusplan::livewire.partials.smart-points', ['goal' => $editingGoal])
+                        @endif
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <x-ui-input-textarea wire:model="goalSmartSpecific" label="S · Spezifisch" hint="Was genau soll erreicht werden?" rows="2" />
+                        <x-ui-input-textarea wire:model="goalSmartMeasurable" label="M · Messbar" hint="Woran erkennen wir die Zielerreichung?" rows="2" />
+                        <x-ui-input-textarea wire:model="goalSmartAchievable" label="A · Ausführbar" hint="Was muss grundsätzlich machbar bzw. vorhanden sein?" rows="2" />
+                        <x-ui-input-textarea wire:model="goalSmartRelevant" label="R · Relevant" hint="Warum ist das Ziel wichtig?" rows="2" />
+                        <x-ui-input-textarea wire:model="goalSmartTimebound" label="T · Terminiert" hint="Bis wann muss das Ziel erreicht sein?" rows="2" />
                     </div>
                 </div>
             </div>

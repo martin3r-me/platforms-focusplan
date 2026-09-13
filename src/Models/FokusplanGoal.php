@@ -27,6 +27,14 @@ class FokusplanGoal extends Model
 
     protected $table = 'fokusplan_goals';
 
+    public const SMART_FIELDS = [
+        'smart_specific' => 'Spezifisch',
+        'smart_measurable' => 'Messbar',
+        'smart_achievable' => 'Ausführbar',
+        'smart_relevant' => 'Relevant',
+        'smart_timebound' => 'Terminiert',
+    ];
+
     protected $fillable = [
         'uuid',
         'fokusplan_plan_id',
@@ -39,6 +47,11 @@ class FokusplanGoal extends Model
         'impact',
         'risk_note',
         'diagnosis',
+        'smart_specific',
+        'smart_measurable',
+        'smart_achievable',
+        'smart_relevant',
+        'smart_timebound',
         'position',
         'created_by_user_id',
     ];
@@ -126,6 +139,32 @@ class FokusplanGoal extends Model
         }
 
         return $sums;
+    }
+
+    /**
+     * SMART-Vollständigkeit je Feld für den Punkte-Indikator (Issue #826).
+     * "nicht erfasst" ist der explizite Zustand für ein leeres Feld — kein
+     * separates Statusfeld nötig, da leer/gefüllt hier bereits eindeutig ist.
+     *
+     * @return array<int, array{key: string, label: string, filled: bool, value: ?string}>
+     */
+    public function smartCompletionPoints(): array
+    {
+        return collect(self::SMART_FIELDS)->map(function (string $label, string $key) {
+            $value = $this->{$key};
+
+            return [
+                'key' => $key,
+                'label' => $label,
+                'filled' => $value !== null && trim($value) !== '',
+                'value' => $value,
+            ];
+        })->values()->all();
+    }
+
+    public function smartCompletionCount(): int
+    {
+        return collect($this->smartCompletionPoints())->where('filled', true)->count();
     }
 
     // Steuerung (Issue #827)
