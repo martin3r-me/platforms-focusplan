@@ -76,6 +76,7 @@
                                     <div class="text-xs text-[var(--ui-muted)] mt-1.5">
                                         {{ $goal->bereichLabel() !== '' ? $goal->bereichLabel() : 'Ohne Bereich' }}
                                     </div>
+                                    @include('fokusplan::livewire.partials.smart-points', ['goal' => $goal])
                                 </a>
                             @endforeach
                         </div>
@@ -107,6 +108,7 @@
                                 <div class="text-xs text-[var(--ui-muted)] mt-1.5">
                                     {{ $goal->bereichLabel() !== '' ? $goal->bereichLabel() : 'Ohne Bereich' }}
                                 </div>
+                                @include('fokusplan::livewire.partials.smart-points', ['goal' => $goal])
                             </a>
                         @endforeach
                     </div>

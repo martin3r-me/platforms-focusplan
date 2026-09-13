@@ -40,6 +40,13 @@ class Show extends Component
     public string $goalRiskNote = '';
     public string $goalDiagnosis = '';
 
+    // SMART-Felder am Ziel (Issue #826)
+    public string $goalSmartSpecific = '';
+    public string $goalSmartMeasurable = '';
+    public string $goalSmartAchievable = '';
+    public string $goalSmartRelevant = '';
+    public string $goalSmartTimebound = '';
+
     // Step anlegen / bearbeiten
     public bool $showStepModal = false;
     public ?int $editingStepId = null;
@@ -173,6 +180,11 @@ class Show extends Component
         $this->goalImpact = $goal->impact ?? '';
         $this->goalRiskNote = $goal->risk_note ?? '';
         $this->goalDiagnosis = $goal->diagnosis ?? '';
+        $this->goalSmartSpecific = $goal->smart_specific ?? '';
+        $this->goalSmartMeasurable = $goal->smart_measurable ?? '';
+        $this->goalSmartAchievable = $goal->smart_achievable ?? '';
+        $this->goalSmartRelevant = $goal->smart_relevant ?? '';
+        $this->goalSmartTimebound = $goal->smart_timebound ?? '';
         $this->showGoalModal = true;
     }
 
@@ -195,6 +207,11 @@ class Show extends Component
             'impact' => trim($this->goalImpact) ?: null,
             'risk_note' => trim($this->goalRiskNote) ?: null,
             'diagnosis' => trim($this->goalDiagnosis) ?: null,
+            'smart_specific' => trim($this->goalSmartSpecific) ?: null,
+            'smart_measurable' => trim($this->goalSmartMeasurable) ?: null,
+            'smart_achievable' => trim($this->goalSmartAchievable) ?: null,
+            'smart_relevant' => trim($this->goalSmartRelevant) ?: null,
+            'smart_timebound' => trim($this->goalSmartTimebound) ?: null,
         ];
 
         if ($this->editingGoalId) {
@@ -227,6 +244,11 @@ class Show extends Component
         $this->goalImpact = '';
         $this->goalRiskNote = '';
         $this->goalDiagnosis = '';
+        $this->goalSmartSpecific = '';
+        $this->goalSmartMeasurable = '';
+        $this->goalSmartAchievable = '';
+        $this->goalSmartRelevant = '';
+        $this->goalSmartTimebound = '';
     }
 
     // ---- Steps ----
