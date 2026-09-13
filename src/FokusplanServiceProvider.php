@@ -80,6 +80,10 @@ class FokusplanServiceProvider extends ServiceProvider
             $registry->register(new \Platform\Fokusplan\Tools\UpdatePhaseTool());
             $registry->register(new \Platform\Fokusplan\Tools\DeletePhaseTool());
 
+            // Goal CRUD (inkl. SMART-Felder, Issue #826)
+            $registry->register(new \Platform\Fokusplan\Tools\CreateGoalTool());
+            $registry->register(new \Platform\Fokusplan\Tools\UpdateGoalTool());
+
             // Step CRUD
             $registry->register(new \Platform\Fokusplan\Tools\CreateStepTool());
             $registry->register(new \Platform\Fokusplan\Tools\UpdateStepTool());
