@@ -31,7 +31,7 @@
                     <x-ui-table compact="true">
                         <x-ui-table-header>
                             <x-ui-table-header-cell compact="true">Titel</x-ui-table-header-cell>
-                            <x-ui-table-header-cell compact="true">Fachbereich</x-ui-table-header-cell>
+                            <x-ui-table-header-cell compact="true">Bereich</x-ui-table-header-cell>
                             <x-ui-table-header-cell compact="true">Verantwortlich</x-ui-table-header-cell>
                             <x-ui-table-header-cell compact="true">Jahr</x-ui-table-header-cell>
                             <x-ui-table-header-cell compact="true" align="right">Steps</x-ui-table-header-cell>
@@ -43,7 +43,7 @@
                                         <div class="font-medium">{{ $plan->title }}</div>
                                     </x-ui-table-cell>
                                     <x-ui-table-cell compact="true">
-                                        <span class="text-sm">{{ $plan->fachbereich ?: '–' }}</span>
+                                        <span class="text-sm">{{ $plan->bereich?->name ?: '–' }}</span>
                                     </x-ui-table-cell>
                                     <x-ui-table-cell compact="true">
                                         <span class="text-sm">{{ $plan->responsible ?: '–' }}</span>

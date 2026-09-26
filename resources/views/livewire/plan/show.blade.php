@@ -187,8 +187,8 @@
         <x-ui-page-sidebar title="Details" width="w-80" :defaultOpen="true">
             <div class="p-5 space-y-4">
                 <div>
-                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Fachbereich</div>
-                    <div class="text-sm text-[var(--ui-secondary)]">{{ $plan->fachbereich ?: '–' }}</div>
+                    <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Bereich</div>
+                    <div class="text-sm text-[var(--ui-secondary)]">{{ $plan->bereich?->name ?: '–' }}</div>
                 </div>
                 <div>
                     <div class="text-[10px] font-semibold uppercase tracking-wider text-[var(--ui-muted)] mb-1">Verantwortlich</div>
@@ -230,7 +230,7 @@
         <x-ui-modal wire:model="showPlanModal" title="Fokusplan bearbeiten">
             <div class="space-y-4">
                 <x-ui-input-text wire:model="planTitle" label="Titel" required />
-                <x-ui-input-text wire:model="planFachbereich" label="Fachbereich" placeholder="z.B. Bankettprofi" />
+                <x-ui-input-text wire:model="planBereich" label="Bereich" placeholder="z.B. Bankettprofi" />
                 <x-ui-input-text wire:model="planResponsible" label="Verantwortlich" />
                 <x-ui-input-text wire:model="planYear" type="number" label="Jahr" placeholder="2026" />
             </div>
@@ -357,7 +357,7 @@
                         <div class="space-y-1.5">
                             @forelse($currentDependencies as $dependency)
                                 <div wire:key="step-dependency-{{ $dependency->id }}" class="flex items-center justify-between gap-2 text-sm bg-[var(--ui-muted-5)] rounded-md px-2.5 py-1.5">
-                                    <span class="truncate">{{ $dependency->plan->fachbereich ?: $dependency->plan->title }} · {{ $dependency->title }}</span>
+                                    <span class="truncate">{{ $dependency->plan->bereichLabel() }} · {{ $dependency->title }}</span>
                                     <button type="button" wire:click="removeStepDependency({{ $dependency->id }})"
                                             class="p-1 rounded-lg text-[var(--ui-muted)] hover:text-[var(--ui-danger)] hover:bg-[var(--ui-danger)]/10 flex-shrink-0">
                                         @svg('heroicon-o-x-mark', 'w-3.5 h-3.5')

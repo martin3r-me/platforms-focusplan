@@ -36,6 +36,7 @@ class Index extends Component
         $team = $user->currentTeam;
 
         $query = FokusplanPlan::where('team_id', $team->id)
+            ->with('bereich')
             ->withCount('steps')
             ->orderByDesc('year')
             ->orderBy('position');
@@ -43,7 +44,7 @@ class Index extends Component
         if ($this->search !== '') {
             $query->where(function ($q) {
                 $q->where('title', 'like', "%{$this->search}%")
-                    ->orWhere('fachbereich', 'like', "%{$this->search}%")
+                    ->orWhereHas('bereich', fn ($bq) => $bq->where('name', 'like', "%{$this->search}%"))
                     ->orWhere('responsible', 'like', "%{$this->search}%");
             });
         }

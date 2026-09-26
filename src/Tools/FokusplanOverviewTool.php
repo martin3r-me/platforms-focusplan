@@ -32,11 +32,11 @@ class FokusplanOverviewTool implements ToolContract, ToolMetadataContract
     {
         return ToolResult::success([
             'module' => 'Fokusplan',
-            'description' => 'Fokuspläne (Aktionspläne) anlegen und ausfüllen. Ein Plan hat einen Kopf (Titel, Fachbereich, Verantwortlich, Jahr) und eine Liste von Steps.',
+            'description' => 'Fokuspläne (Aktionspläne) anlegen und ausfüllen. Ein Plan hat einen Kopf (Titel, Bereich, Verantwortlich, Jahr) und eine Liste von Steps.',
             'data_model' => [
                 'FokusplanPlan' => [
                     'title' => 'Titel des Plans (z.B. "Fokusplan 2026 – Bankettprofi")',
-                    'fachbereich' => 'Fachbereich (z.B. "Bankettprofi")',
+                    'bereich' => 'Bereich (z.B. "Bankettprofi") — echte Zuordnung auf FokusplanBereich, team-weit wiederverwendet',
                     'responsible' => 'Verantwortlicher',
                     'year' => 'Jahr (integer)',
                     'phases' => 'hasMany FokusplanPhase (Abschnitte)',

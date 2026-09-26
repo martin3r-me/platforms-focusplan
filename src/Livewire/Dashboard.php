@@ -35,6 +35,7 @@ class Dashboard extends Component
         $team = $user->currentTeam;
 
         $plans = FokusplanPlan::where('team_id', $team->id)
+            ->with('bereich')
             ->withCount('steps')
             ->orderByDesc('year')
             ->orderBy('position')

@@ -42,6 +42,11 @@ return [
                     'route' => 'fokusplan.orientation.index',
                     'icon' => 'heroicon-o-compass',
                 ],
+                'management' => [
+                    'title' => 'Management-Übersicht',
+                    'route' => 'fokusplan.management.index',
+                    'icon' => 'heroicon-o-building-office',
+                ],
                 'dependencies' => [
                     'title' => 'Abhängigkeiten & Ressourcen',
                     'route' => 'fokusplan.dependencies.index',

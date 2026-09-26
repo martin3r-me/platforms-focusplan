@@ -7,6 +7,7 @@ use Platform\Core\Contracts\ToolContext;
 use Platform\Core\Contracts\ToolMetadataContract;
 use Platform\Core\Contracts\ToolResult;
 use Platform\Core\Tools\Concerns\HasStandardizedWriteOperations;
+use Platform\Fokusplan\Models\FokusplanBereich;
 use Platform\Fokusplan\Services\FokusplanPlanService;
 use Platform\Fokusplan\Tools\Concerns\ResolvesFokusplanTeam;
 
@@ -22,7 +23,7 @@ class CreatePlanTool implements ToolContract, ToolMetadataContract
 
     public function getDescription(): string
     {
-        return 'POST /fokusplan/plans - Erstellt einen neuen Fokusplan. ERFORDERLICH: title. Optional: fachbereich, responsible, year, description.';
+        return 'POST /fokusplan/plans - Erstellt einen neuen Fokusplan. ERFORDERLICH: title. Optional: bereich, responsible, year, description.';
     }
 
     public function getSchema(): array
@@ -37,9 +38,9 @@ class CreatePlanTool implements ToolContract, ToolMetadataContract
                     'type' => 'string',
                     'description' => 'Titel des Fokusplans (ERFORDERLICH), z.B. "Fokusplan 2026".',
                 ],
-                'fachbereich' => [
+                'bereich' => [
                     'type' => 'string',
-                    'description' => 'Optional: Fachbereich, z.B. "BANKETTPROFI PHASE 1".',
+                    'description' => 'Optional: Name des Bereichs, z.B. "BANKETTPROFI PHASE 1". Wird team-weit wiederverwendet, falls der Name schon existiert, sonst neu angelegt.',
                 ],
                 'responsible' => [
                     'type' => 'string',
@@ -76,10 +77,13 @@ class CreatePlanTool implements ToolContract, ToolMetadataContract
                 return ToolResult::error('VALIDATION_ERROR', 'title ist erforderlich.');
             }
 
+            $bereichName = trim((string) ($arguments['bereich'] ?? ''));
+            $bereich = $bereichName !== '' ? FokusplanBereich::findOrCreateForTeam($teamId, $bereichName) : null;
+
             $service = new FokusplanPlanService();
             $plan = $service->createPlan([
                 'title' => $title,
-                'fachbereich' => $arguments['fachbereich'] ?? null,
+                'bereich_id' => $bereich?->id,
                 'responsible' => $arguments['responsible'] ?? null,
                 'year' => isset($arguments['year']) ? (int) $arguments['year'] : null,
                 'description' => $arguments['description'] ?? null,
@@ -91,7 +95,7 @@ class CreatePlanTool implements ToolContract, ToolMetadataContract
                 'id' => $plan->id,
                 'uuid' => $plan->uuid,
                 'title' => $plan->title,
-                'fachbereich' => $plan->fachbereich,
+                'bereich' => $plan->bereichLabel(),
                 'year' => $plan->year,
                 'team_id' => $plan->team_id,
                 'message' => "Fokusplan '{$plan->title}' erfolgreich erstellt.",

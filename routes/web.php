@@ -3,6 +3,7 @@
 use Platform\Fokusplan\Livewire\Dashboard;
 use Platform\Fokusplan\Livewire\Orientation\Index as OrientationIndex;
 use Platform\Fokusplan\Livewire\Dependencies\Index as DependenciesIndex;
+use Platform\Fokusplan\Livewire\Management\Index as ManagementIndex;
 use Platform\Fokusplan\Livewire\Plan\Index as PlanIndex;
 use Platform\Fokusplan\Livewire\Plan\Show as PlanShow;
 
@@ -11,3 +12,4 @@ Route::get('/plans', PlanIndex::class)->name('fokusplan.plans.index');
 Route::get('/plans/{plan}', PlanShow::class)->name('fokusplan.plans.show');
 Route::get('/orientation', OrientationIndex::class)->name('fokusplan.orientation.index');
 Route::get('/dependencies', DependenciesIndex::class)->name('fokusplan.dependencies.index');
+Route::get('/management', ManagementIndex::class)->name('fokusplan.management.index');

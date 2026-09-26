@@ -18,7 +18,7 @@ class FokusplanPlan extends Model
         'uuid',
         'team_id',
         'title',
-        'fachbereich',
+        'bereich_id',
         'responsible',
         'year',
         'description',
@@ -68,6 +68,21 @@ class FokusplanPlan extends Model
     public function goals(): HasMany
     {
         return $this->hasMany(FokusplanGoal::class, 'fokusplan_plan_id')->orderBy('position');
+    }
+
+    public function bereich(): BelongsTo
+    {
+        return $this->belongsTo(FokusplanBereich::class, 'bereich_id');
+    }
+
+    /**
+     * Anzeigename des Bereichs (Issue #825), mit Rückfall auf den Plantitel
+     * für Pläne ohne Bereich — hält das bisherige Verhalten des
+     * `fachbereich`-Freitextfelds bei (siehe Git-History vor #825).
+     */
+    public function bereichLabel(): string
+    {
+        return trim($this->bereich?->name ?: $this->title);
     }
 
     // Scopes

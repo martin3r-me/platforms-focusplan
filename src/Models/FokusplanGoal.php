@@ -102,18 +102,31 @@ class FokusplanGoal extends Model
     }
 
     /**
-     * Bereich des Ziels für die Ausrichtungsseite (Issue #831): pragmatisch über
-     * das bestehende fachbereich-Freitextfeld des Plans gelöst (analog #828),
-     * solange #825 (Bereich als echte Entität) offen ist.
+     * Bereich des Ziels (Issue #825: echte Zuordnung über FokusplanBereich
+     * statt des früheren `fachbereich`-Freitextfelds), delegiert an den Plan.
      */
     public function bereichLabel(): string
     {
-        $plan = $this->plan;
-        if (!$plan) {
-            return '';
+        return $this->plan?->bereichLabel() ?? '';
+    }
+
+    /**
+     * Nächster relevanter Termin für die Management-Übersicht (Issue #825):
+     * die früheste noch offene Step-Deadline, analog zur Overdue-Prüfung in
+     * statusAmpel(). Kein eigenes Datumsfeld am Ziel, da der Termin sich aus
+     * den Maßnahmen ergibt (gleiche Herleitung wie Fortschritt/Ampel).
+     */
+    public function nextDeadline(): ?\Illuminate\Support\Carbon
+    {
+        $openWithDeadline = $this->steps
+            ->filter(fn (FokusplanStep $step) => $step->status !== FokusplanStep::STATUS_DONE && $step->deadline !== null)
+            ->sortBy('deadline');
+
+        if ($openWithDeadline->isNotEmpty()) {
+            return $openWithDeadline->first()->deadline;
         }
 
-        return trim($plan->fachbereich ?: $plan->title);
+        return $this->steps->pluck('deadline')->filter()->sort()->last();
     }
 
     /**

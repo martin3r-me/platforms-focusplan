@@ -12,7 +12,7 @@ class Index extends Component
 
     protected function bereichLabel($plan): string
     {
-        return trim($plan->fachbereich ?: $plan->title);
+        return $plan->bereichLabel();
     }
 
     public function render()
@@ -21,7 +21,7 @@ class Index extends Component
 
         $steps = $team
             ? FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $team->id))
-                ->with(['plan', 'goal', 'dependsOn.plan', 'dependsOn.goal'])
+                ->with(['plan.bereich', 'goal', 'dependsOn.plan.bereich', 'dependsOn.goal'])
                 ->get()
             : collect();
 

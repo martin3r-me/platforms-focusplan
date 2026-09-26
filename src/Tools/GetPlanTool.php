@@ -53,7 +53,7 @@ class GetPlanTool implements ToolContract, ToolMetadataContract
             }
 
             $plan = FokusplanPlan::where('team_id', $teamId)
-                ->with(['phases.steps', 'steps'])
+                ->with(['phases.steps', 'steps', 'bereich'])
                 ->find($planId);
             if (!$plan) {
                 return ToolResult::error('NOT_FOUND', 'Fokusplan nicht gefunden. Nutze "fokusplan.plans.GET".');
@@ -79,7 +79,7 @@ class GetPlanTool implements ToolContract, ToolMetadataContract
                 'id' => $plan->id,
                 'uuid' => $plan->uuid,
                 'title' => $plan->title,
-                'fachbereich' => $plan->fachbereich,
+                'bereich' => $plan->bereichLabel(),
                 'responsible' => $plan->responsible,
                 'year' => $plan->year,
                 'description' => $plan->description,
