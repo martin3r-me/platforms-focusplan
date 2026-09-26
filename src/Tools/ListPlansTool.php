@@ -51,6 +51,7 @@ class ListPlansTool implements ToolContract, ToolMetadataContract
             $teamId = (int) $resolved['team_id'];
 
             $query = FokusplanPlan::where('team_id', $teamId)
+                ->with('bereich')
                 ->withCount('steps')
                 ->orderByDesc('year')
                 ->orderBy('position');
@@ -63,7 +64,7 @@ class ListPlansTool implements ToolContract, ToolMetadataContract
                 'id' => $plan->id,
                 'uuid' => $plan->uuid,
                 'title' => $plan->title,
-                'fachbereich' => $plan->fachbereich,
+                'bereich' => $plan->bereichLabel(),
                 'responsible' => $plan->responsible,
                 'year' => $plan->year,
                 'steps_count' => $plan->steps_count,

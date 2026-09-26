@@ -4,6 +4,7 @@ namespace Platform\Fokusplan\Livewire\Plan;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use Platform\Fokusplan\Models\FokusplanBereich;
 use Platform\Fokusplan\Models\FokusplanPlan;
 use Platform\Fokusplan\Models\FokusplanStep;
 use Platform\Fokusplan\Services\FokusplanGoalService;
@@ -17,7 +18,7 @@ class Show extends Component
     // Plan-Header bearbeiten
     public bool $showPlanModal = false;
     public string $planTitle = '';
-    public string $planFachbereich = '';
+    public string $planBereich = '';
     public string $planResponsible = '';
     public ?int $planYear = null;
 
@@ -80,6 +81,14 @@ class Show extends Component
         }
 
         $this->plan = $plan;
+
+        // Deep-Link ins Zieldetail (Issue #825, Management-Übersicht): eine
+        // Zeile der Management-Tabelle verlinkt hierher mit ?goal=<id> und
+        // öffnet direkt den Steuerungsblock des Ziels statt nur den Plan.
+        $goalId = (int) request()->query('goal', 0);
+        if ($goalId > 0 && $this->plan->goals()->whereKey($goalId)->exists()) {
+            $this->editGoal($goalId);
+        }
     }
 
     // ---- Plan-Header ----
@@ -87,7 +96,7 @@ class Show extends Component
     public function openPlanModal()
     {
         $this->planTitle = $this->plan->title;
-        $this->planFachbereich = $this->plan->fachbereich ?? '';
+        $this->planBereich = $this->plan->bereich?->name ?? '';
         $this->planResponsible = $this->plan->responsible ?? '';
         $this->planYear = $this->plan->year;
         $this->showPlanModal = true;
@@ -100,9 +109,14 @@ class Show extends Component
             return;
         }
 
+        $bereichName = trim($this->planBereich);
+        $bereichId = $bereichName !== ''
+            ? FokusplanBereich::findOrCreateForTeam($this->plan->team_id, $bereichName)->id
+            : null;
+
         $this->plan->update([
             'title' => $title,
-            'fachbereich' => trim($this->planFachbereich) ?: null,
+            'bereich_id' => $bereichId,
             'responsible' => trim($this->planResponsible) ?: null,
             'year' => $this->planYear ?: null,
         ]);
@@ -456,11 +470,11 @@ class Show extends Component
 
                 $dependencyOptions = FokusplanStep::whereHas('plan', fn ($q) => $q->where('team_id', $this->plan->team_id))
                     ->whereNotIn('id', $excludeIds)
-                    ->with('plan')
+                    ->with('plan.bereich')
                     ->get()
                     ->map(fn (FokusplanStep $s) => [
                         'id' => $s->id,
-                        'label' => trim(($s->plan->fachbereich ?: $s->plan->title) . ' · ' . $s->title),
+                        'label' => trim($s->plan->bereichLabel() . ' · ' . $s->title),
                     ])
                     ->sortBy('label')
                     ->values();

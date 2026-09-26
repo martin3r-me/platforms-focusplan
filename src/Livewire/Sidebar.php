@@ -49,6 +49,7 @@ class Sidebar extends Component
         }
 
         $query = FokusplanPlan::where('team_id', $teamId)
+            ->with('bereich')
             ->withCount('steps')
             ->orderByDesc('year')
             ->orderBy('position');
@@ -57,7 +58,7 @@ class Sidebar extends Component
             $search = mb_strtolower($this->sidebarSearch);
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(title) like ?', ["%{$search}%"])
-                    ->orWhereRaw('LOWER(fachbereich) like ?', ["%{$search}%"]);
+                    ->orWhereHas('bereich', fn ($bq) => $bq->whereRaw('LOWER(name) like ?', ["%{$search}%"]));
             });
         }
 

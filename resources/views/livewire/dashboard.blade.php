@@ -45,8 +45,8 @@
                                         <x-ui-badge variant="secondary" size="sm">{{ $plan->year }}</x-ui-badge>
                                     @endif
                                 </div>
-                                @if($plan->fachbereich)
-                                    <div class="text-xs text-[var(--ui-muted)] truncate mb-1">{{ $plan->fachbereich }}</div>
+                                @if($plan->bereich)
+                                    <div class="text-xs text-[var(--ui-muted)] truncate mb-1">{{ $plan->bereich->name }}</div>
                                 @endif
                                 <div class="text-xs text-[var(--ui-muted)]">{{ $plan->steps_count }} Steps</div>
                             </a>

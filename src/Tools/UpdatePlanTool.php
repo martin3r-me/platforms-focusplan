@@ -7,6 +7,7 @@ use Platform\Core\Contracts\ToolContext;
 use Platform\Core\Contracts\ToolMetadataContract;
 use Platform\Core\Contracts\ToolResult;
 use Platform\Core\Tools\Concerns\HasStandardizedWriteOperations;
+use Platform\Fokusplan\Models\FokusplanBereich;
 use Platform\Fokusplan\Models\FokusplanPlan;
 use Platform\Fokusplan\Services\FokusplanPlanService;
 use Platform\Fokusplan\Tools\Concerns\ResolvesFokusplanTeam;
@@ -23,7 +24,7 @@ class UpdatePlanTool implements ToolContract, ToolMetadataContract
 
     public function getDescription(): string
     {
-        return 'PATCH /fokusplan/plans/{id} - Aktualisiert einen Fokusplan. ERFORDERLICH: plan_id. Optional: title, fachbereich, responsible, year, description.';
+        return 'PATCH /fokusplan/plans/{id} - Aktualisiert einen Fokusplan. ERFORDERLICH: plan_id. Optional: title, bereich, responsible, year, description.';
     }
 
     public function getSchema(): array
@@ -35,7 +36,7 @@ class UpdatePlanTool implements ToolContract, ToolMetadataContract
                     'description' => 'ID des Fokusplans (ERFORDERLICH).',
                 ],
                 'title' => ['type' => 'string', 'description' => 'Optional: Neuer Titel.'],
-                'fachbereich' => ['type' => 'string', 'description' => 'Optional: Fachbereich.'],
+                'bereich' => ['type' => 'string', 'description' => 'Optional: Name des Bereichs (wird team-weit wiederverwendet oder neu angelegt). Leerstring entfernt die Zuordnung.'],
                 'responsible' => ['type' => 'string', 'description' => 'Optional: Verantwortlicher.'],
                 'year' => ['type' => 'integer', 'description' => 'Optional: Jahr.'],
                 'description' => ['type' => 'string', 'description' => 'Optional: Beschreibung.'],
@@ -64,13 +65,19 @@ class UpdatePlanTool implements ToolContract, ToolMetadataContract
             }
 
             $data = [];
-            foreach (['title', 'fachbereich', 'responsible', 'description'] as $field) {
+            foreach (['title', 'responsible', 'description'] as $field) {
                 if (array_key_exists($field, $arguments)) {
                     $data[$field] = $arguments[$field];
                 }
             }
             if (array_key_exists('year', $arguments)) {
                 $data['year'] = $arguments['year'] !== null ? (int) $arguments['year'] : null;
+            }
+            if (array_key_exists('bereich', $arguments)) {
+                $bereichName = trim((string) $arguments['bereich']);
+                $data['bereich_id'] = $bereichName !== ''
+                    ? FokusplanBereich::findOrCreateForTeam($teamId, $bereichName)->id
+                    : null;
             }
 
             if (isset($data['title']) && trim((string) $data['title']) === '') {
@@ -83,7 +90,7 @@ class UpdatePlanTool implements ToolContract, ToolMetadataContract
             return ToolResult::success([
                 'id' => $plan->id,
                 'title' => $plan->title,
-                'fachbereich' => $plan->fachbereich,
+                'bereich' => $plan->bereichLabel(),
                 'responsible' => $plan->responsible,
                 'year' => $plan->year,
                 'message' => "Fokusplan '{$plan->title}' erfolgreich aktualisiert.",
